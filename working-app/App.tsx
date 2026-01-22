@@ -65,37 +65,76 @@ function CardComponent({
   );
 }
 
-function Hand({
+function HandGrid({
   cards,
-  selectedIds,
-  onCardPress,
+  selectedCounts,
+  onColorPress,
   discardMode,
 }: {
   cards: Card[];
-  selectedIds: string[];
-  onCardPress: (id: string) => void;
+  selectedCounts: Record<CardColor, number>;
+  onColorPress: (color: CardColor) => void;
   discardMode: boolean;
 }) {
+  // Group cards by color and count
+  const colorCounts = cards.reduce((acc, card) => {
+    acc[card.color] = (acc[card.color] || 0) + 1;
+    return acc;
+  }, {} as Record<CardColor, number>);
+
+  // Get colors that have cards, maintaining a consistent order
+  const colorOrder: CardColor[] = [
+    'red', 'orange', 'yellow', 'green', 'blue',
+    'purple', 'black', 'white', 'locomotive'
+  ];
+  const ownedColors = colorOrder.filter(color => colorCounts[color] > 0);
+
   return (
     <View>
       <Text style={styles.sectionLabel}>
         Your Hand ({cards.length} cards)
-        {discardMode && ' - Tap cards to select'}
+        {discardMode && ' - Tap to select'}
       </Text>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.handContainer}
-      >
-        {cards.map((card) => (
-          <CardComponent
-            key={card.id}
-            card={card}
-            selected={selectedIds.includes(card.id)}
-            onPress={discardMode ? () => onCardPress(card.id) : undefined}
-          />
-        ))}
-      </ScrollView>
+      <View style={styles.handGrid}>
+        {ownedColors.map((color) => {
+          const count = colorCounts[color];
+          const selected = selectedCounts[color] || 0;
+          const isSelected = selected > 0;
+
+          return (
+            <TouchableOpacity
+              key={color}
+              onPress={discardMode ? () => onColorPress(color) : undefined}
+              disabled={!discardMode}
+              activeOpacity={0.7}
+              style={styles.handGridItem}
+            >
+              <View
+                style={[
+                  styles.handGridCard,
+                  isSelected && styles.handGridCardSelected,
+                ]}
+              >
+                <Image
+                  source={CARD_IMAGES[color]}
+                  style={styles.handGridImage}
+                  resizeMode="cover"
+                />
+                {discardMode && isSelected && (
+                  <View style={styles.selectedOverlay}>
+                    <Text style={styles.selectedOverlayText}>
+                      {selected}/{count}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <Text style={styles.handGridCount}>
+                {discardMode && selected > 0 ? `${selected}/${count}` : count}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -112,9 +151,7 @@ function FaceUpDisplay({
   canDrawLocomotive: boolean;
 }) {
   return (
-    <View>
-      <Text style={styles.sectionLabel}>Face-Up Cards (tap to draw)</Text>
-      <View style={styles.faceUpContainer}>
+    <View style={styles.faceUpContainer}>
         {cards.map((card, index) => {
           const isLoco = card.color === 'locomotive';
           const canTake = canDraw && (canDrawLocomotive || !isLoco);
@@ -125,11 +162,10 @@ function FaceUpDisplay({
               disabled={!canTake}
               style={[styles.faceUpSlot, !canTake && styles.faceUpDisabled]}
             >
-              <CardComponent card={card} size="small" />
+              <CardComponent card={card} />
             </TouchableOpacity>
           );
         })}
-      </View>
     </View>
   );
 }
@@ -358,7 +394,7 @@ function GameScreen({
   onLeave: () => void;
 }) {
   const [discardMode, setDiscardMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedCounts, setSelectedCounts] = useState<Record<CardColor, number>>({} as Record<CardColor, number>);
 
   const isMyTurn =
     state.currentTurn?.playerId === state.mySocketId;
@@ -370,21 +406,40 @@ function GameScreen({
     state.players.find((p) => p.id === state.currentTurn?.playerId)?.name ??
     'Unknown';
 
-  const handleCardPress = (cardId: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(cardId)
-        ? prev.filter((id) => id !== cardId)
-        : [...prev, cardId]
-    );
+  // Count cards by color for max selection limits
+  const colorCounts = state.hand.reduce((acc, card) => {
+    acc[card.color] = (acc[card.color] || 0) + 1;
+    return acc;
+  }, {} as Record<CardColor, number>);
+
+  const handleColorPress = (color: CardColor) => {
+    setSelectedCounts((prev) => {
+      const current = prev[color] || 0;
+      const max = colorCounts[color] || 0;
+      // Increment, wrap to 0 if exceeding max
+      const next = current >= max ? 0 : current + 1;
+      return { ...prev, [color]: next };
+    });
   };
 
   const handleConfirmDiscard = () => {
-    if (selectedIds.length > 0) {
-      onDiscard(selectedIds);
-      setSelectedIds([]);
+    // Convert selectedCounts to actual card IDs
+    const cardIds: string[] = [];
+    for (const [color, count] of Object.entries(selectedCounts)) {
+      if (count > 0) {
+        // Get card IDs for this color (take first 'count' cards)
+        const colorCards = state.hand.filter(c => c.color === color);
+        cardIds.push(...colorCards.slice(0, count).map(c => c.id));
+      }
+    }
+    if (cardIds.length > 0) {
+      onDiscard(cardIds);
+      setSelectedCounts({} as Record<CardColor, number>);
       setDiscardMode(false);
     }
   };
+
+  const totalSelected = Object.values(selectedCounts).reduce((sum, n) => sum + n, 0);
 
   return (
     <View style={styles.gameContainer}>
@@ -402,20 +457,21 @@ function GameScreen({
       </View>
 
       <ScrollView style={styles.gameScroll}>
-        {/* Face-up cards */}
-        <FaceUpDisplay
-          cards={state.faceUpCards}
-          onCardPress={onDrawFaceUp}
-          canDraw={canDraw}
-          canDrawLocomotive={canDrawLocomotive}
-        />
-
-        {/* Draw deck */}
-        <DrawDeck
-          deckCount={state.deckCount}
-          onPress={onDrawDeck}
-          disabled={!canDraw}
-        />
+        {/* Draw area: Face-up cards on left, deck on right */}
+        <Text style={styles.sectionLabel}>Draw Cards</Text>
+        <View style={styles.drawArea}>
+          <FaceUpDisplay
+            cards={state.faceUpCards}
+            onCardPress={onDrawFaceUp}
+            canDraw={canDraw}
+            canDrawLocomotive={canDrawLocomotive}
+          />
+          <DrawDeck
+            deckCount={state.deckCount}
+            onPress={onDrawDeck}
+            disabled={!canDraw}
+          />
+        </View>
 
         {/* Players info */}
         <View style={styles.playersInfo}>
@@ -438,10 +494,10 @@ function GameScreen({
 
       {/* Hand */}
       <View style={styles.handSection}>
-        <Hand
+        <HandGrid
           cards={state.hand}
-          selectedIds={selectedIds}
-          onCardPress={handleCardPress}
+          selectedCounts={selectedCounts}
+          onColorPress={handleColorPress}
           discardMode={discardMode}
         />
 
@@ -454,14 +510,14 @@ function GameScreen({
                 onPress={handleConfirmDiscard}
               >
                 <Text style={styles.buttonText}>
-                  Discard ({selectedIds.length})
+                  Discard ({totalSelected})
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => {
                   setDiscardMode(false);
-                  setSelectedIds([]);
+                  setSelectedCounts({} as Record<CardColor, number>);
                 }}
               >
                 <Text style={styles.cancelText}>Cancel</Text>
@@ -862,62 +918,66 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  faceUpContainer: {
+  drawArea: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
     marginBottom: 24,
+    gap: 16,
+  },
+  faceUpContainer: {
+    flexDirection: 'column',
+    gap: 6,
   },
   faceUpSlot: {
-    padding: 4,
+    padding: 2,
   },
   faceUpDisabled: {
     opacity: 0.5,
   },
   deckContainer: {
     alignItems: 'center',
+    justifyContent: 'center',
     padding: 12,
     backgroundColor: 'rgba(0,0,0,0.3)',
     borderRadius: 12,
-    marginBottom: 24,
+    flex: 1,
   },
   deckDisabled: {
     opacity: 0.5,
   },
   deckStack: {
-    width: 80,
-    height: 100,
+    width: 60,
+    height: 75,
     position: 'relative',
   },
   deckCard: {
     position: 'absolute',
-    width: 60,
-    height: 85,
+    width: 45,
+    height: 65,
     backgroundColor: '#34495e',
-    borderRadius: 6,
+    borderRadius: 4,
     borderWidth: 2,
     borderColor: '#2c3e50',
     justifyContent: 'center',
     alignItems: 'center',
   },
   deckCard3: { top: 0, left: 0 },
-  deckCard2: { top: 4, left: 6 },
-  deckCard1: { top: 8, left: 12 },
+  deckCard2: { top: 3, left: 4 },
+  deckCard1: { top: 6, left: 8 },
   deckQuestion: {
     color: '#95a5a6',
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   deckCount: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 8,
+    marginTop: 6,
   },
   deckHint: {
     color: '#3498db',
-    fontSize: 11,
-    marginTop: 4,
+    fontSize: 10,
+    marginTop: 2,
   },
   playersInfo: {
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -950,6 +1010,51 @@ const styles = StyleSheet.create({
   handContainer: {
     paddingVertical: 8,
     gap: 8,
+  },
+  handGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    gap: 12,
+  },
+  handGridItem: {
+    alignItems: 'center',
+    width: '30%',
+  },
+  handGridCard: {
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 3,
+    borderColor: 'transparent',
+  },
+  handGridCardSelected: {
+    borderColor: '#27ae60',
+  },
+  handGridImage: {
+    width: 100,
+    height: 70,
+    borderRadius: 5,
+  },
+  handGridCount: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  selectedOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(39, 174, 96, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  selectedOverlayText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   card: {
     borderRadius: 8,
