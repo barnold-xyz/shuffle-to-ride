@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   StatusBar,
   Image,
+  Animated,
 } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 import {
@@ -195,6 +196,38 @@ function DrawDeck({
       <Text style={styles.deckCount}>{deckCount} cards</Text>
       {!disabled && <Text style={styles.deckHint}>Tap to draw</Text>}
     </TouchableOpacity>
+  );
+}
+
+function Toast({ message }: { message: string | null }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (message) {
+      setVisible(true);
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2500),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setVisible(false));
+    }
+  }, [message, opacity]);
+
+  if (!visible || !message) return null;
+
+  return (
+    <Animated.View style={[styles.toast, { opacity }]}>
+      <Text style={styles.toastText}>{message}</Text>
+    </Animated.View>
   );
 }
 
@@ -566,6 +599,28 @@ export default function App() {
     mySocketId: null,
   });
   const [connecting, setConnecting] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const toastKeyRef = useRef(0);
+
+  const formatActionMessage = useCallback((action: {
+    type: string;
+    playerName: string;
+    cardColor?: string;
+    count?: number;
+  }): string => {
+    switch (action.type) {
+      case 'drew-from-deck':
+        return `${action.playerName} drew a card`;
+      case 'drew-face-up':
+        return `${action.playerName} drew a ${action.cardColor} card`;
+      case 'discarded':
+        return `${action.playerName} discarded ${action.count} card${action.count !== 1 ? 's' : ''} to claim a route`;
+      case 'turn-started':
+        return `${action.playerName}'s turn`;
+      default:
+        return '';
+    }
+  }, []);
 
   const setupSocket = useCallback((serverUrl: string) => {
     if (socketRef.current) {
@@ -636,13 +691,26 @@ export default function App() {
       setState((s) => ({ ...s, hand }));
     });
 
+    socket.on('player-action', (action: {
+      type: string;
+      playerName: string;
+      cardColor?: string;
+      count?: number;
+    }) => {
+      const message = formatActionMessage(action);
+      if (message) {
+        toastKeyRef.current += 1;
+        setToastMessage(message);
+      }
+    });
+
     socket.on('error', ({ message }: { message: string }) => {
       Alert.alert('Error', message);
     });
 
     socketRef.current = socket;
     return socket;
-  }, []);
+  }, [formatActionMessage]);
 
   const handleCreateRoom = useCallback(
     (playerName: string, serverUrl: string) => {
@@ -746,6 +814,9 @@ export default function App() {
           onEndTurn={handleEndTurn}
           onLeave={handleLeave}
         />
+      )}
+      {state.screen === 'game' && (
+        <Toast key={toastKeyRef.current} message={toastMessage} />
       )}
     </SafeAreaView>
   );
@@ -1105,5 +1176,21 @@ const styles = StyleSheet.create({
   leaveButton: {
     paddingHorizontal: 16,
     paddingVertical: 10,
+  },
+  toast: {
+    position: 'absolute',
+    bottom: 220,
+    left: 16,
+    right: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    zIndex: 100,
+  },
+  toastText: {
+    color: '#fff',
+    fontSize: 14,
+    textAlign: 'center',
   },
 });

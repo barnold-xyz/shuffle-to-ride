@@ -66,6 +66,19 @@ function broadcastPlayerList(roomCode: string): void {
   });
 }
 
+function broadcastPlayerAction(
+  roomCode: string,
+  excludeSocketId: string,
+  action: {
+    type: 'drew-from-deck' | 'drew-face-up' | 'discarded' | 'turn-started';
+    playerName: string;
+    cardColor?: string;
+    count?: number;
+  }
+): void {
+  io.to(roomCode).except(excludeSocketId).emit('player-action', action);
+}
+
 io.on('connection', (socket: Socket) => {
   console.log(`Player connected: ${socket.id}`);
 
@@ -200,16 +213,30 @@ io.on('connection', (socket: Socket) => {
     }
 
     const card = drawFromDeck(state, socket.id);
-    if (card && state.currentTurn) {
+    const player = state.players.find((p) => p.id === socket.id);
+    if (card && state.currentTurn && player) {
       state.currentTurn.cardsDrawn++;
 
       console.log(`${socket.id} drew from deck: ${card.color}`);
+
+      // Notify other players (don't reveal card color)
+      broadcastPlayerAction(roomCode, socket.id, {
+        type: 'drew-from-deck',
+        playerName: player.name,
+      });
 
       // Check if turn is complete
       if (isTurnComplete(state)) {
         const nextPlayerId = getNextPlayer(state);
         if (nextPlayerId) {
+          const nextPlayer = state.players.find((p) => p.id === nextPlayerId);
           startTurn(state, nextPlayerId);
+          if (nextPlayer) {
+            broadcastPlayerAction(roomCode, nextPlayerId, {
+              type: 'turn-started',
+              playerName: nextPlayer.name,
+            });
+          }
         }
       }
 
@@ -248,13 +275,21 @@ io.on('connection', (socket: Socket) => {
     }
 
     const result = drawFaceUpCard(state, socket.id, index);
-    if (result && state.currentTurn) {
+    const player = state.players.find((p) => p.id === socket.id);
+    if (result && state.currentTurn && player) {
       state.currentTurn.cardsDrawn++;
       if (result.isLocomotive) {
         state.currentTurn.drewLocomotive = true;
       }
 
       console.log(`${socket.id} drew face-up: ${result.card.color}`);
+
+      // Notify other players (reveal card color since it was face-up)
+      broadcastPlayerAction(roomCode, socket.id, {
+        type: 'drew-face-up',
+        playerName: player.name,
+        cardColor: result.card.color,
+      });
 
       // Refill deck from discard if needed
       if (state.deck.length === 0) {
@@ -265,7 +300,14 @@ io.on('connection', (socket: Socket) => {
       if (isTurnComplete(state)) {
         const nextPlayerId = getNextPlayer(state);
         if (nextPlayerId) {
+          const nextPlayer = state.players.find((p) => p.id === nextPlayerId);
           startTurn(state, nextPlayerId);
+          if (nextPlayer) {
+            broadcastPlayerAction(roomCode, nextPlayerId, {
+              type: 'turn-started',
+              playerName: nextPlayer.name,
+            });
+          }
         }
       }
 
@@ -282,9 +324,18 @@ io.on('connection', (socket: Socket) => {
     const state = rooms.get(roomCode);
     if (!state || state.phase !== 'playing') return;
 
+    const player = state.players.find((p) => p.id === socket.id);
     const success = discardCards(state, socket.id, cardIds);
-    if (success) {
+    if (success && player) {
       console.log(`${socket.id} discarded ${cardIds.length} cards`);
+
+      // Notify other players
+      broadcastPlayerAction(roomCode, socket.id, {
+        type: 'discarded',
+        playerName: player.name,
+        count: cardIds.length,
+      });
+
       broadcastGameState(roomCode);
     } else {
       socket.emit('error', { message: 'Failed to discard cards' });
@@ -308,7 +359,14 @@ io.on('connection', (socket: Socket) => {
 
     const nextPlayerId = getNextPlayer(state);
     if (nextPlayerId) {
+      const nextPlayer = state.players.find((p) => p.id === nextPlayerId);
       startTurn(state, nextPlayerId);
+      if (nextPlayer) {
+        broadcastPlayerAction(roomCode, nextPlayerId, {
+          type: 'turn-started',
+          playerName: nextPlayer.name,
+        });
+      }
     }
 
     broadcastGameState(roomCode);
