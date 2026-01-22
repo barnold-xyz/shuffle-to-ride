@@ -9,6 +9,7 @@ import {
   Alert,
   SafeAreaView,
   StatusBar,
+  Image,
 } from 'react-native';
 import { io, Socket } from 'socket.io-client';
 import {
@@ -20,6 +21,7 @@ import {
   GameState,
   CARD_COLORS,
 } from './src/types';
+import { CARD_IMAGES } from './src/cardImages';
 
 // ============ COMPONENTS ============
 
@@ -35,8 +37,8 @@ function CardComponent({
   size?: 'normal' | 'small';
 }) {
   const isSmall = size === 'small';
-  const width = isSmall ? 50 : 70;
-  const height = isSmall ? 70 : 100;
+  const width = isSmall ? 70 : 100;
+  const height = isSmall ? 50 : 70;
 
   return (
     <TouchableOpacity
@@ -48,16 +50,17 @@ function CardComponent({
         {
           width,
           height,
-          backgroundColor: CARD_COLORS[card.color],
-          borderColor: selected ? '#fff' : 'rgba(0,0,0,0.3)',
-          borderWidth: selected ? 3 : 2,
+          borderColor: selected ? '#fff' : 'transparent',
+          borderWidth: selected ? 3 : 0,
           transform: selected ? [{ translateY: -10 }] : [],
         },
       ]}
     >
-      {card.color === 'locomotive' && (
-        <Text style={styles.locomotiveText}>W</Text>
-      )}
+      <Image
+        source={CARD_IMAGES[card.color]}
+        style={[styles.cardImage, { width, height }]}
+        resizeMode="cover"
+      />
     </TouchableOpacity>
   );
 }
@@ -952,6 +955,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  cardImage: {
+    borderRadius: 8,
   },
   locomotiveText: {
     color: '#fff',
