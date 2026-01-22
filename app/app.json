@@ -26,6 +26,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "750f9a92-37df-4db5-b248-d66c52fa6394"
+      }
+    },
+    "owner": "barnold"
   }
 }
