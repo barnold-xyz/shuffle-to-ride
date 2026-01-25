@@ -342,16 +342,26 @@ function DrawDeck({
       onPress={onPress}
       disabled={disabled}
       style={[styles.deckContainer, disabled && styles.deckDisabled]}
+      activeOpacity={0.7}
     >
       <View style={styles.deckStack}>
-        <View style={[styles.deckCard, styles.deckCard3]} />
-        <View style={[styles.deckCard, styles.deckCard2]} />
-        <View style={[styles.deckCard, styles.deckCard1]}>
+        <LinearGradient
+          colors={[THEME.bgElevated, THEME.bgCard]}
+          style={[styles.deckCard, styles.deckCard3]}
+        />
+        <LinearGradient
+          colors={[THEME.bgElevated, THEME.bgCard]}
+          style={[styles.deckCard, styles.deckCard2]}
+        />
+        <LinearGradient
+          colors={[THEME.bgElevated, THEME.bgCard]}
+          style={[styles.deckCard, styles.deckCard1]}
+        >
           <Text style={styles.deckQuestion}>?</Text>
-        </View>
+        </LinearGradient>
       </View>
       <Text style={styles.deckCount}>{deckCount} cards</Text>
-      {!disabled && <Text style={styles.deckHint}>Tap to draw</Text>}
+      {!disabled && <Text style={styles.deckHint}>TAP TO DRAW</Text>}
     </TouchableOpacity>
   );
 }
@@ -669,17 +679,31 @@ function GameScreen({
   return (
     <View style={styles.gameContainer}>
       {/* Turn indicator */}
-      <View style={[styles.turnBar, isMyTurn && styles.turnBarActive]}>
-        <Text style={styles.turnText}>
-          {isMyTurn ? 'Your Turn' : `${currentPlayerName}'s Turn`}
-        </Text>
-        {isMyTurn && (
-          <Text style={styles.drawCount}>
-            Drawn: {cardsDrawn}/2
-            {state.currentTurn?.drewLocomotive && ' (locomotive)'}
+      <LinearGradient
+        colors={isMyTurn
+          ? [THEME.successLight, THEME.successFaint]
+          : [THEME.bgMid, THEME.bgDark]
+        }
+        style={styles.turnBar}
+      >
+        <View>
+          <Text style={styles.turnText}>
+            {isMyTurn ? 'Your Turn' : `${currentPlayerName}'s Turn`}
           </Text>
+          {isMyTurn && (
+            <Text style={styles.drawCount}>
+              Drawn: {cardsDrawn}/2
+              {state.currentTurn?.drewLocomotive && ' (locomotive)'}
+            </Text>
+          )}
+        </View>
+        {isMyTurn && (
+          <View style={styles.turnIndicator}>
+            <View style={[styles.turnDot, styles.turnDotActive]} />
+            <View style={[styles.turnDot, cardsDrawn >= 1 && styles.turnDotActive]} />
+          </View>
         )}
-      </View>
+      </LinearGradient>
 
       <ScrollView style={styles.gameScroll}>
         {/* Draw area: Face-up cards on left, deck on right */}
@@ -1233,74 +1257,94 @@ const styles = StyleSheet.create({
   // Game styles
   gameContainer: {
     flex: 1,
+    backgroundColor: THEME.bgDark,
   },
   turnBar: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  turnBarActive: {
-    backgroundColor: 'rgba(39, 174, 96, 0.3)',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.border,
   },
   turnText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    ...TYPE.bodyL,
+    color: THEME.textPrimary,
   },
   drawCount: {
-    color: '#95a5a6',
-    fontSize: 12,
-    marginTop: 4,
+    ...TYPE.caption,
+    color: THEME.textSecondary,
+    marginTop: 2,
+  },
+  turnIndicator: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  turnDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.border,
+  },
+  turnDotActive: {
+    backgroundColor: THEME.brass,
+    borderColor: THEME.brassLight,
   },
   gameScroll: {
     flex: 1,
-    padding: 16,
+    padding: SPACING.lg,
   },
   sectionLabel: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    ...TYPE.caption,
+    fontWeight: '600',
+    color: THEME.textSecondary,
+    marginBottom: SPACING.sm,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   drawArea: {
     flexDirection: 'row',
-    marginBottom: 24,
-    gap: 16,
+    marginBottom: SPACING.xl,
+    gap: SPACING.lg,
   },
   faceUpContainer: {
     flexDirection: 'column',
-    gap: 6,
+    gap: SPACING.sm,
   },
   faceUpSlot: {
-    padding: 2,
+    borderRadius: RADIUS.lg,
   },
   faceUpDisabled: {
     opacity: 0.5,
   },
   deckContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 12,
-    flex: 1,
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.lg,
   },
   deckDisabled: {
     opacity: 0.5,
   },
   deckStack: {
     width: 60,
-    height: 75,
+    height: 80,
     position: 'relative',
   },
   deckCard: {
     position: 'absolute',
-    width: 45,
-    height: 65,
-    backgroundColor: '#34495e',
-    borderRadius: 4,
+    width: 50,
+    height: 70,
+    borderRadius: RADIUS.md,
     borderWidth: 2,
-    borderColor: '#2c3e50',
+    borderColor: THEME.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1308,20 +1352,20 @@ const styles = StyleSheet.create({
   deckCard2: { top: 3, left: 4 },
   deckCard1: { top: 6, left: 8 },
   deckQuestion: {
-    color: '#95a5a6',
-    fontSize: 18,
-    fontWeight: 'bold',
+    ...TYPE.heading,
+    color: THEME.brass,
   },
   deckCount: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginTop: 6,
+    ...TYPE.bodyS,
+    fontWeight: '700',
+    color: THEME.textPrimary,
+    marginTop: SPACING.sm,
   },
   deckHint: {
-    color: '#3498db',
-    fontSize: 10,
-    marginTop: 2,
+    ...TYPE.micro,
+    color: THEME.brass,
+    letterSpacing: 1,
+    marginTop: SPACING.xs,
   },
   playersInfo: {
     backgroundColor: 'rgba(0,0,0,0.3)',
