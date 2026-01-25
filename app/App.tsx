@@ -716,7 +716,7 @@ function GameScreen({
 
   return (
     <LinearGradient
-      colors={[THEME.bgMid, THEME.bgDark]}
+      colors={[THEME.bgElevated, THEME.bgMid, THEME.bgDark]}
       style={styles.gameContainer}
     >
       {/* Turn indicator */}
@@ -1317,7 +1317,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.md,
+    paddingTop: 50,
+    paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
     borderBottomColor: THEME.border,

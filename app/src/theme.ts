@@ -12,11 +12,11 @@ export const THEME = {
   brassLight: '#E8C547',
   brassDark: '#A68B1F',
 
-  // Background - aged wood & leather
-  bgDark: '#1A1512',
-  bgMid: '#2A2320',
-  bgCard: '#352E28',
-  bgElevated: '#3F3731',
+  // Background - aged wood & leather (warmer, more visible)
+  bgDark: '#1E1815',
+  bgMid: '#2D2622',
+  bgCard: '#3D342D',
+  bgElevated: '#4A403A',
 
   // Text - cream & parchment
   textPrimary: '#F5EDE0',
