@@ -12,7 +12,8 @@ import {
   Image,
   Animated,
 } from 'react-native';
-import { io, Socket } from 'socket.io-client';
+import PartySocket from 'partysocket';
+import { config } from './src/config';
 import {
   Card,
   CardColor,
@@ -23,6 +24,15 @@ import {
   CARD_COLORS,
 } from './src/types';
 import { CARD_IMAGES } from './src/cardImages';
+
+function generateRoomCode(): string {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
 
 // ============ COMPONENTS ============
 
@@ -238,13 +248,12 @@ function HomeScreen({
   onJoinRoom,
   connecting,
 }: {
-  onCreateRoom: (name: string, serverUrl: string) => void;
-  onJoinRoom: (name: string, code: string, serverUrl: string) => void;
+  onCreateRoom: (name: string) => void;
+  onJoinRoom: (name: string, code: string) => void;
   connecting: boolean;
 }) {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
-  const [serverUrl, setServerUrl] = useState('http://192.168.1.157:3000');
   const [mode, setMode] = useState<'menu' | 'create' | 'join'>('menu');
 
   const handleCreate = () => {
@@ -252,7 +261,7 @@ function HomeScreen({
       Alert.alert('Error', 'Please enter your name');
       return;
     }
-    onCreateRoom(playerName.trim(), serverUrl);
+    onCreateRoom(playerName.trim());
   };
 
   const handleJoin = () => {
@@ -264,7 +273,7 @@ function HomeScreen({
       Alert.alert('Error', 'Please enter room code');
       return;
     }
-    onJoinRoom(playerName.trim(), roomCode.trim().toUpperCase(), serverUrl);
+    onJoinRoom(playerName.trim(), roomCode.trim().toUpperCase());
   };
 
   if (mode === 'menu') {
@@ -272,18 +281,6 @@ function HomeScreen({
       <View style={styles.screenContainer}>
         <Text style={styles.title}>Shuffle to Ride</Text>
         <Text style={styles.subtitle}>Train Card Companion</Text>
-
-        <View style={styles.serverUrlContainer}>
-          <Text style={styles.inputLabel}>Server URL:</Text>
-          <TextInput
-            style={styles.input}
-            value={serverUrl}
-            onChangeText={setServerUrl}
-            placeholder="http://192.168.1.100:3000"
-            placeholderTextColor="#666"
-            autoCapitalize="none"
-          />
-        </View>
 
         <TouchableOpacity
           style={styles.primaryButton}
@@ -583,7 +580,7 @@ function GameScreen({
 // ============ MAIN APP ============
 
 export default function App() {
-  const socketRef = useRef<Socket | null>(null);
+  const socketRef = useRef<PartySocket | null>(null);
   const [state, setState] = useState<GameState>({
     screen: 'home',
     roomCode: null,
@@ -622,22 +619,22 @@ export default function App() {
     }
   }, []);
 
-  const setupSocket = useCallback((serverUrl: string) => {
+  const setupSocket = useCallback((roomCode: string) => {
     if (socketRef.current) {
-      socketRef.current.disconnect();
+      socketRef.current.close();
     }
 
-    const socket = io(serverUrl, {
-      transports: ['websocket'],
-      timeout: 10000,
+    const socket = new PartySocket({
+      host: config.serverUrl.replace(/^wss?:\/\//, ''),
+      room: roomCode,
     });
 
-    socket.on('connect', () => {
+    socket.addEventListener('open', () => {
       console.log('Connected:', socket.id);
-      setState((s) => ({ ...s, connected: true, mySocketId: socket.id ?? null }));
+      setState((s) => ({ ...s, connected: true, mySocketId: socket.id }));
     });
 
-    socket.on('disconnect', () => {
+    socket.addEventListener('close', () => {
       console.log('Disconnected');
       setState((s) => ({
         ...s,
@@ -648,64 +645,54 @@ export default function App() {
       setConnecting(false);
     });
 
-    socket.on('room-created', ({ roomCode }: { roomCode: string }) => {
-      setState((s) => ({ ...s, roomCode, screen: 'lobby' }));
-      setConnecting(false);
-    });
+    socket.addEventListener('message', (event) => {
+      const { type, payload } = JSON.parse(event.data);
 
-    socket.on('player-joined', ({ players }: { players: PublicPlayer[] }) => {
-      setState((s) => ({ ...s, players }));
-    });
+      switch (type) {
+        case 'room-created':
+          setState((s) => ({ ...s, roomCode: payload.roomCode, screen: 'lobby' }));
+          setConnecting(false);
+          break;
 
-    socket.on(
-      'game-started',
-      ({ yourHand, faceUpCards }: { yourHand: Card[]; faceUpCards: Card[] }) => {
-        setState((s) => ({
-          ...s,
-          screen: 'game',
-          hand: yourHand,
-          faceUpCards,
-        }));
+        case 'player-joined':
+          setState((s) => ({ ...s, players: payload.players }));
+          break;
+
+        case 'game-started':
+          setState((s) => ({
+            ...s,
+            screen: 'game',
+            hand: payload.yourHand,
+            faceUpCards: payload.faceUpCards,
+          }));
+          break;
+
+        case 'game-state':
+          setState((s) => ({
+            ...s,
+            faceUpCards: payload.faceUpCards,
+            deckCount: payload.deckCount,
+            players: payload.players,
+            currentTurn: payload.currentTurn,
+          }));
+          break;
+
+        case 'your-hand':
+          setState((s) => ({ ...s, hand: payload.hand }));
+          break;
+
+        case 'player-action':
+          const message = formatActionMessage(payload);
+          if (message) {
+            toastKeyRef.current += 1;
+            setToastMessage(message);
+          }
+          break;
+
+        case 'error':
+          Alert.alert('Error', payload.message);
+          break;
       }
-    );
-
-    socket.on(
-      'game-state',
-      (payload: {
-        faceUpCards: Card[];
-        deckCount: number;
-        players: PublicPlayer[];
-        currentTurn: CurrentTurn | null;
-      }) => {
-        setState((s) => ({
-          ...s,
-          faceUpCards: payload.faceUpCards,
-          deckCount: payload.deckCount,
-          players: payload.players,
-          currentTurn: payload.currentTurn,
-        }));
-      }
-    );
-
-    socket.on('your-hand', ({ hand }: { hand: Card[] }) => {
-      setState((s) => ({ ...s, hand }));
-    });
-
-    socket.on('player-action', (action: {
-      type: string;
-      playerName: string;
-      cardColor?: string;
-      count?: number;
-    }) => {
-      const message = formatActionMessage(action);
-      if (message) {
-        toastKeyRef.current += 1;
-        setToastMessage(message);
-      }
-    });
-
-    socket.on('error', ({ message }: { message: string }) => {
-      Alert.alert('Error', message);
     });
 
     socketRef.current = socket;
@@ -713,49 +700,56 @@ export default function App() {
   }, [formatActionMessage]);
 
   const handleCreateRoom = useCallback(
-    (playerName: string, serverUrl: string) => {
+    (playerName: string) => {
       setConnecting(true);
-      const socket = setupSocket(serverUrl);
+      const roomCode = generateRoomCode();
+      const socket = setupSocket(roomCode);
       setState((s) => ({ ...s, playerName, isHost: true }));
 
-      socket.on('connect', () => {
-        socket.emit('create-room', { playerName });
-      });
+      socket.addEventListener('open', () => {
+        socket.send(JSON.stringify({
+          type: 'join-room',
+          payload: { playerName }
+        }));
+      }, { once: true });
     },
     [setupSocket]
   );
 
   const handleJoinRoom = useCallback(
-    (playerName: string, roomCode: string, serverUrl: string) => {
+    (playerName: string, roomCode: string) => {
       setConnecting(true);
-      const socket = setupSocket(serverUrl);
+      const socket = setupSocket(roomCode.toUpperCase());
       setState((s) => ({ ...s, playerName, isHost: false }));
 
-      socket.on('connect', () => {
-        socket.emit('join-room', { roomCode, playerName });
-      });
+      socket.addEventListener('open', () => {
+        socket.send(JSON.stringify({
+          type: 'join-room',
+          payload: { playerName }
+        }));
+      }, { once: true });
     },
     [setupSocket]
   );
 
   const handleStartGame = useCallback(() => {
-    socketRef.current?.emit('start-game');
+    socketRef.current?.send(JSON.stringify({ type: 'start-game' }));
   }, []);
 
   const handleDrawDeck = useCallback(() => {
-    socketRef.current?.emit('draw-from-deck');
+    socketRef.current?.send(JSON.stringify({ type: 'draw-from-deck' }));
   }, []);
 
   const handleDrawFaceUp = useCallback((index: number) => {
-    socketRef.current?.emit('draw-face-up', { index });
+    socketRef.current?.send(JSON.stringify({ type: 'draw-face-up', payload: { index } }));
   }, []);
 
   const handleDiscard = useCallback((cardIds: string[]) => {
-    socketRef.current?.emit('discard-cards', { cardIds });
+    socketRef.current?.send(JSON.stringify({ type: 'discard-cards', payload: { cardIds } }));
   }, []);
 
   const handleEndTurn = useCallback(() => {
-    socketRef.current?.emit('end-turn');
+    socketRef.current?.send(JSON.stringify({ type: 'end-turn' }));
   }, []);
 
   const handleLeave = useCallback(() => {
@@ -765,7 +759,7 @@ export default function App() {
         text: 'Leave',
         style: 'destructive',
         onPress: () => {
-          socketRef.current?.disconnect();
+          socketRef.current?.close();
           setState({
             screen: 'home',
             roomCode: null,
