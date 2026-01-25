@@ -1118,7 +1118,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   homeContainer: {
-    paddingTop: 60,
+    justifyContent: 'flex-start',
+    paddingTop: 80,
   },
 
   // Title styles
