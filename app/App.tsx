@@ -54,11 +54,13 @@ function ArtDecoCorner({ position }: { position: 'topLeft' | 'topRight' | 'botto
         style={[
           decorStyles.cornerLineH,
           isRight && decorStyles.cornerLineHRight,
+          isBottom && decorStyles.cornerLineHBottom,
         ]}
       />
       <View
         style={[
           decorStyles.cornerLineV,
+          isRight && decorStyles.cornerLineVRight,
           isBottom && decorStyles.cornerLineVBottom,
         ]}
       />
@@ -124,27 +126,35 @@ const decorStyles = StyleSheet.create({
   },
   cornerLineH: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 16,
+    top: -1,
+    left: -1,
+    width: 18,
     height: 2,
     backgroundColor: THEME.brass,
   },
   cornerLineHRight: {
     left: undefined,
-    right: 0,
+    right: -1,
+  },
+  cornerLineHBottom: {
+    top: undefined,
+    bottom: -1,
   },
   cornerLineV: {
     position: 'absolute',
-    top: 0,
-    left: 0,
+    top: -1,
+    left: -1,
     width: 2,
-    height: 16,
+    height: 18,
     backgroundColor: THEME.brass,
+  },
+  cornerLineVRight: {
+    left: undefined,
+    right: -1,
   },
   cornerLineVBottom: {
     top: undefined,
-    bottom: 0,
+    bottom: -1,
   },
   cornerDot: {
     position: 'absolute',
@@ -417,8 +427,15 @@ function Toast({ message }: { message: string | null }) {
         },
       ]}
     >
-      <View style={styles.toastAccent} />
+      <View style={styles.toastHeader}>
+        <View style={styles.toastHeaderLine} />
+        <Text style={styles.toastHeaderText}>DISPATCH</Text>
+        <View style={styles.toastHeaderLine} />
+      </View>
       <Text style={styles.toastText}>{message}</Text>
+      <View style={styles.toastFooter}>
+        <Text style={styles.toastFooterText}>═══ END ═══</Text>
+      </View>
     </Animated.View>
   );
 }
@@ -575,7 +592,7 @@ function LobbyScreen({
   return (
     <LinearGradient
       colors={[THEME.bgMid, THEME.bgDark]}
-      style={styles.screenContainer}
+      style={[styles.screenContainer, styles.lobbyContainer]}
     >
       <OrnateBox style={styles.roomCodeBox}>
         <Text style={styles.roomCodeLabel}>ROOM CODE</Text>
@@ -702,7 +719,10 @@ function GameScreen({
   const totalSelected = Object.values(selectedCounts).reduce((sum, n) => sum + n, 0);
 
   return (
-    <View style={styles.gameContainer}>
+    <LinearGradient
+      colors={[THEME.bgMid, THEME.bgDark]}
+      style={styles.gameContainer}
+    >
       {/* Turn indicator */}
       <LinearGradient
         colors={isMyTurn
@@ -841,7 +861,7 @@ function GameScreen({
           )}
         </View>
       </LinearGradient>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -1202,6 +1222,10 @@ const styles = StyleSheet.create({
   },
 
   // Lobby styles
+  lobbyContainer: {
+    justifyContent: 'flex-start',
+    paddingTop: 60,
+  },
   roomCodeBox: {
     alignItems: 'center',
     width: '100%',
@@ -1288,7 +1312,6 @@ const styles = StyleSheet.create({
   // Game styles
   gameContainer: {
     flex: 1,
-    backgroundColor: THEME.bgDark,
   },
   turnBar: {
     flexDirection: 'row',
@@ -1579,35 +1602,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
   },
-  // Toast
+  // Toast (Telegram style)
   toast: {
     position: 'absolute',
     bottom: 220,
     left: SPACING.lg,
     right: SPACING.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(26, 21, 18, 0.95)',
-    borderWidth: 1,
-    borderColor: THEME.border,
-    borderRadius: RADIUS.md,
+    backgroundColor: '#F5EDE0',
+    borderWidth: 2,
+    borderColor: THEME.brass,
+    borderRadius: RADIUS.sm,
     overflow: 'hidden',
     shadowColor: THEME.shadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.6,
     shadowRadius: 24,
     elevation: 12,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
   },
-  toastAccent: {
-    width: 3,
-    alignSelf: 'stretch',
+  toastHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+  },
+  toastHeaderLine: {
+    flex: 1,
+    height: 1,
     backgroundColor: THEME.brass,
+  },
+  toastHeaderText: {
+    ...TYPE.micro,
+    fontWeight: '700',
+    color: THEME.burgundy,
+    letterSpacing: 2,
+    marginHorizontal: SPACING.sm,
   },
   toastText: {
     ...TYPE.bodyS,
-    color: THEME.textPrimary,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    flex: 1,
+    color: THEME.textInverse,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
+  toastFooter: {
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+  },
+  toastFooterText: {
+    ...TYPE.micro,
+    color: THEME.brass,
+    letterSpacing: 1,
   },
 });
