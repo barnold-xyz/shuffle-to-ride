@@ -425,71 +425,100 @@ function HomeScreen({
 
   if (mode === 'menu') {
     return (
-      <View style={styles.screenContainer}>
-        <Text style={styles.title}>Shuffle to Ride</Text>
-        <Text style={styles.subtitle}>Train Card Companion</Text>
+      <LinearGradient
+        colors={[THEME.bgMid, THEME.bgDark]}
+        style={styles.screenContainer}
+      >
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Shuffle to Ride</Text>
+          <Text style={styles.subtitle}>Train Card Companion</Text>
+        </View>
 
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => setMode('create')}
-        >
-          <Text style={styles.buttonText}>Create Room</Text>
-        </TouchableOpacity>
+        <DiamondDivider />
 
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => setMode('join')}
-        >
-          <Text style={styles.buttonText}>Join Room</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => setMode('create')}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[THEME.burgundy, THEME.burgundyDark]}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>Create Room</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => setMode('join')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.secondaryButtonText}>Join Room</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.screenContainer}>
-      <Text style={styles.title}>
+    <LinearGradient
+      colors={[THEME.bgMid, THEME.bgDark]}
+      style={styles.screenContainer}
+    >
+      <Text style={styles.screenTitle}>
         {mode === 'create' ? 'Create Room' : 'Join Room'}
       </Text>
 
-      <TextInput
-        style={styles.input}
-        value={playerName}
-        onChangeText={setPlayerName}
-        placeholder="Your Name"
-        placeholderTextColor="#666"
-        autoCapitalize="words"
-      />
+      <DiamondDivider color={THEME.border} />
 
-      {mode === 'join' && (
+      <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          value={roomCode}
-          onChangeText={setRoomCode}
-          placeholder="Room Code"
-          placeholderTextColor="#666"
-          autoCapitalize="characters"
-          maxLength={4}
+          value={playerName}
+          onChangeText={setPlayerName}
+          placeholder="Your Name"
+          placeholderTextColor={THEME.textMuted}
+          autoCapitalize="words"
         />
-      )}
+
+        {mode === 'join' && (
+          <TextInput
+            style={styles.input}
+            value={roomCode}
+            onChangeText={setRoomCode}
+            placeholder="Room Code"
+            placeholderTextColor={THEME.textMuted}
+            autoCapitalize="characters"
+            maxLength={4}
+          />
+        )}
+
+        <TouchableOpacity
+          style={[styles.primaryButton, connecting && styles.disabledButton]}
+          onPress={mode === 'create' ? handleCreate : handleJoin}
+          disabled={connecting}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={connecting ? [THEME.bgCard, THEME.bgMid] : [THEME.burgundy, THEME.burgundyDark]}
+            style={styles.primaryButtonGradient}
+          >
+            <Text style={styles.primaryButtonText}>
+              {connecting ? 'Connecting...' : mode === 'create' ? 'Create' : 'Join'}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity
-        style={[styles.primaryButton, connecting && styles.disabledButton]}
-        onPress={mode === 'create' ? handleCreate : handleJoin}
-        disabled={connecting}
-      >
-        <Text style={styles.buttonText}>
-          {connecting ? 'Connecting...' : mode === 'create' ? 'Create' : 'Join'}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.backButton}
+        style={styles.textButton}
         onPress={() => setMode('menu')}
       >
-        <Text style={styles.backButtonText}>Back</Text>
+        <Text style={styles.textButtonText}>Back</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -969,55 +998,118 @@ export default function App() {
 // ============ STYLES ============
 
 const styles = StyleSheet.create({
+  // Container styles
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: THEME.bgDark,
   },
   screenContainer: {
     flex: 1,
-    padding: 24,
+    padding: SPACING.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
+
+  // Title styles
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
+    ...TYPE.displayXL,
+    color: THEME.brass,
+    textAlign: 'center',
+    letterSpacing: 2,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#95a5a6',
-    marginBottom: 48,
+    ...TYPE.body,
+    color: THEME.textSecondary,
+    marginTop: SPACING.sm,
   },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    padding: 16,
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 16,
+  screenTitle: {
+    ...TYPE.displayM,
+    color: THEME.textPrimary,
+    marginBottom: SPACING.sm,
+  },
+
+  // Button container
+  buttonContainer: {
     width: '100%',
+    gap: SPACING.md,
   },
+
+  // Primary button (gradient with brass border)
   primaryButton: {
-    backgroundColor: '#3498db',
-    borderRadius: 8,
-    padding: 16,
     width: '100%',
-    alignItems: 'center',
-    marginBottom: 12,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.brass,
+    overflow: 'hidden',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  secondaryButton: {
-    backgroundColor: '#27ae60',
-    borderRadius: 8,
-    padding: 16,
-    width: '100%',
+  primaryButtonGradient: {
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
     alignItems: 'center',
+  },
+  primaryButtonText: {
+    ...TYPE.body,
+    fontWeight: '600',
+    color: THEME.textPrimary,
+    letterSpacing: 0.5,
   },
   disabledButton: {
-    backgroundColor: '#2c3e50',
+    borderColor: THEME.border,
     opacity: 0.7,
   },
+
+  // Secondary button (outlined)
+  secondaryButton: {
+    width: '100%',
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    paddingVertical: SPACING.lg - 2,
+    paddingHorizontal: SPACING.xl,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  secondaryButtonText: {
+    ...TYPE.body,
+    fontWeight: '500',
+    color: THEME.textSecondary,
+  },
+
+  // Text button (tertiary)
+  textButton: {
+    marginTop: SPACING.xl,
+    padding: SPACING.md,
+  },
+  textButtonText: {
+    ...TYPE.bodyS,
+    color: THEME.textMuted,
+  },
+
+  // Form styles
+  formContainer: {
+    width: '100%',
+    gap: SPACING.lg,
+  },
+  input: {
+    backgroundColor: THEME.bgMid,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.lg,
+    color: THEME.textPrimary,
+    ...TYPE.body,
+  },
+
+  // Legacy styles (kept for other screens)
   buttonText: {
     color: '#fff',
     fontSize: 16,
