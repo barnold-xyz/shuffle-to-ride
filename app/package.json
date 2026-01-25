@@ -11,9 +11,9 @@
   "dependencies": {
     "expo": "~54.0.31",
     "expo-status-bar": "~3.0.9",
+    "partysocket": "^1.1.10",
     "react": "19.1.0",
-    "react-native": "0.81.5",
-    "socket.io-client": "^4.7.4"
+    "react-native": "0.81.5"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
