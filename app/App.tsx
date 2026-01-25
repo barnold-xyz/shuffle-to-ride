@@ -12,7 +12,9 @@ import {
   Image,
   Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { config } from './src/config';
+import { THEME, TYPE, SPACING, RADIUS } from './src/theme';
 import {
   Card,
   CardColor,
@@ -23,6 +25,152 @@ import {
   CARD_COLORS,
 } from './src/types';
 import { CARD_IMAGES } from './src/cardImages';
+
+// ============ DECORATIVE COMPONENTS ============
+
+function DiamondDivider({ color = THEME.brass }: { color?: string }) {
+  return (
+    <View style={decorStyles.dividerContainer}>
+      <View style={[decorStyles.dividerLine, { backgroundColor: color }]} />
+      <View style={[decorStyles.diamond, { borderColor: color }]} />
+      <View style={[decorStyles.dividerLine, { backgroundColor: color }]} />
+    </View>
+  );
+}
+
+function ArtDecoCorner({ position }: { position: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' }) {
+  const isRight = position === 'topRight' || position === 'bottomRight';
+  const isBottom = position === 'bottomLeft' || position === 'bottomRight';
+
+  return (
+    <View
+      style={[
+        decorStyles.corner,
+        isRight && decorStyles.cornerRight,
+        isBottom && decorStyles.cornerBottom,
+      ]}
+    >
+      <View
+        style={[
+          decorStyles.cornerLineH,
+          isRight && decorStyles.cornerLineHRight,
+        ]}
+      />
+      <View
+        style={[
+          decorStyles.cornerLineV,
+          isBottom && decorStyles.cornerLineVBottom,
+        ]}
+      />
+      <View
+        style={[
+          decorStyles.cornerDot,
+          isRight && decorStyles.cornerDotRight,
+          isBottom && decorStyles.cornerDotBottom,
+        ]}
+      />
+    </View>
+  );
+}
+
+function OrnateBox({ children, style }: { children: React.ReactNode; style?: object }) {
+  return (
+    <LinearGradient
+      colors={['rgba(107, 28, 35, 0.3)', 'rgba(74, 18, 25, 0.2)']}
+      style={[decorStyles.ornateBox, style]}
+    >
+      <ArtDecoCorner position="topLeft" />
+      <ArtDecoCorner position="topRight" />
+      <ArtDecoCorner position="bottomLeft" />
+      <ArtDecoCorner position="bottomRight" />
+      {children}
+    </LinearGradient>
+  );
+}
+
+const decorStyles = StyleSheet.create({
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  diamond: {
+    width: 8,
+    height: 8,
+    borderWidth: 1,
+    transform: [{ rotate: '45deg' }],
+    marginHorizontal: SPACING.md,
+    backgroundColor: 'transparent',
+  },
+  corner: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    top: 0,
+    left: 0,
+  },
+  cornerRight: {
+    left: undefined,
+    right: 0,
+  },
+  cornerBottom: {
+    top: undefined,
+    bottom: 0,
+  },
+  cornerLineH: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 16,
+    height: 2,
+    backgroundColor: THEME.brass,
+  },
+  cornerLineHRight: {
+    left: undefined,
+    right: 0,
+  },
+  cornerLineV: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 2,
+    height: 16,
+    backgroundColor: THEME.brass,
+  },
+  cornerLineVBottom: {
+    top: undefined,
+    bottom: 0,
+  },
+  cornerDot: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: THEME.brass,
+  },
+  cornerDotRight: {
+    left: undefined,
+    right: 6,
+  },
+  cornerDotBottom: {
+    top: undefined,
+    bottom: 6,
+  },
+  ornateBox: {
+    borderWidth: 2,
+    borderColor: THEME.brass,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.xl,
+    position: 'relative',
+  },
+});
 
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
