@@ -367,31 +367,57 @@ function DrawDeck({
 
 function Toast({ message }: { message: string | null }) {
   const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (message) {
       setVisible(true);
-      Animated.sequence([
+      Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
           duration: 200,
           useNativeDriver: true,
         }),
-        Animated.delay(2500),
-        Animated.timing(opacity, {
+        Animated.timing(translateY, {
           toValue: 0,
-          duration: 300,
+          duration: 200,
           useNativeDriver: true,
         }),
-      ]).start(() => setVisible(false));
+      ]).start();
+
+      const timeout = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY, {
+            toValue: 20,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => setVisible(false));
+      }, 2500);
+
+      return () => clearTimeout(timeout);
     }
-  }, [message, opacity]);
+  }, [message, opacity, translateY]);
 
   if (!visible || !message) return null;
 
   return (
-    <Animated.View style={[styles.toast, { opacity }]}>
+    <Animated.View
+      style={[
+        styles.toast,
+        {
+          opacity,
+          transform: [{ translateY }],
+        },
+      ]}
+    >
+      <View style={styles.toastAccent} />
       <Text style={styles.toastText}>{message}</Text>
     </Animated.View>
   );
@@ -1576,20 +1602,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
   },
+  // Toast
   toast: {
     position: 'absolute',
     bottom: 220,
-    left: 16,
-    right: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    zIndex: 100,
+    left: SPACING.lg,
+    right: SPACING.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(26, 21, 18, 0.95)',
+    borderWidth: 1,
+    borderColor: THEME.border,
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    elevation: 12,
+  },
+  toastAccent: {
+    width: 3,
+    alignSelf: 'stretch',
+    backgroundColor: THEME.brass,
   },
   toastText: {
-    color: '#fff',
-    fontSize: 14,
-    textAlign: 'center',
+    ...TYPE.bodyS,
+    color: THEME.textPrimary,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    flex: 1,
   },
 });
