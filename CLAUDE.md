@@ -28,7 +28,7 @@ Runs on localhost:1999.
 cd server
 npm run deploy
 ```
-Deploys to shuffle-to-ride.partykit.dev.
+Deploys to shuffle-to-ride.barnold-xyz.partykit.dev. Note: On Windows, run PartyKit commands via WSL.
 
 ### Client
 ```bash
@@ -90,6 +90,8 @@ Scan QR code with Expo Go app. The app automatically connects to the appropriate
 - Toast notifications show other players' actions with privacy rules (deck draws don't reveal color)
 - Server broadcasts game state after every action to keep all clients in sync
 - Room codes are generated client-side and become the PartyKit party ID
+- Set `USE_LOCAL_SERVER = true` in `app/src/config.ts` to test against localhost instead of prod
+- PartyKit has Windows path bugs; use WSL for `npm run dev` and `npm run deploy`
 
 ## Future Enhancements
 
