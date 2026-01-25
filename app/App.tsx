@@ -721,10 +721,7 @@ function GameScreen({
     >
       {/* Turn indicator */}
       <LinearGradient
-        colors={isMyTurn
-          ? [THEME.successLight, THEME.successFaint]
-          : [THEME.bgMid, THEME.bgDark]
-        }
+        colors={['#2A4A2E', '#1F3A22']}
         style={styles.turnBar}
       >
         <View>
@@ -1320,8 +1317,8 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: THEME.border,
+    borderBottomWidth: 2,
+    borderBottomColor: THEME.brass,
   },
   turnText: {
     ...TYPE.bodyL,
@@ -1372,7 +1369,7 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     borderRadius: RADIUS.xl,
     borderWidth: 1,
-    borderColor: '#3A5A3E',
+    borderColor: THEME.brass,
   },
   faceUpSlot: {
     borderRadius: RADIUS.lg,
@@ -1386,7 +1383,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#2A4A2E',
     borderWidth: 1,
-    borderColor: '#3A5A3E',
+    borderColor: THEME.brass,
     borderRadius: RADIUS.xl,
     padding: SPACING.lg,
   },
@@ -1429,10 +1426,10 @@ const styles = StyleSheet.create({
   },
   // Players panel
   playersPanel: {
-    backgroundColor: THEME.bgCard,
+    backgroundColor: '#2A4A2E',
     borderRadius: RADIUS.xl,
     borderWidth: 1,
-    borderColor: THEME.border,
+    borderColor: THEME.brass,
     padding: SPACING.md,
     marginBottom: SPACING.lg,
   },
@@ -1471,7 +1468,7 @@ const styles = StyleSheet.create({
   handSection: {
     padding: SPACING.lg,
     borderTopWidth: 2,
-    borderTopColor: '#3A5A3E',
+    borderTopColor: THEME.brass,
   },
   handLabel: {
     ...TYPE.bodyS,
