@@ -15,7 +15,7 @@ You still use the physical board, train pieces, and destination tickets. The app
 
 ## Requirements
 
-- Android phones with the app installed (iOS coming soon)
+- Android or iOS phones with the app installed
 - Internet connection (the server runs in the cloud)
 
 ## Quick Start
@@ -38,16 +38,28 @@ The app follows standard Ticket to Ride card rules:
 | 3+ locomotives face-up | All 5 discarded, 5 new cards dealt |
 | Claiming routes | Select matching cards, tap Discard |
 
-## Building the Android App
+## Building the App
 
-To build a new APK (after code changes):
+Builds run on Expo's build servers via EAS.
+
+### Android (APK)
 
 ```bash
 cd app
 npx eas-cli build --profile preview --platform android
 ```
 
-This runs on Expo's build servers. When complete, you'll get a download link for the APK.
+When complete, you'll get a download link for the APK.
+
+### iOS (TestFlight)
+
+```bash
+cd app
+npx eas-cli build --profile production --platform ios
+npx eas-cli submit --platform ios
+```
+
+After submitting, go to App Store Connect → TestFlight to add testers.
 
 ## Development
 
