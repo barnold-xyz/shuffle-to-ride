@@ -538,49 +538,68 @@ function LobbyScreen({
   onLeave: () => void;
 }) {
   return (
-    <View style={styles.screenContainer}>
-      <View style={styles.roomCodeBox}>
-        <Text style={styles.roomCodeLabel}>Room Code</Text>
+    <LinearGradient
+      colors={[THEME.bgMid, THEME.bgDark]}
+      style={styles.screenContainer}
+    >
+      <OrnateBox style={styles.roomCodeBox}>
+        <Text style={styles.roomCodeLabel}>ROOM CODE</Text>
         <Text style={styles.roomCodeText}>{roomCode}</Text>
-        <Text style={styles.roomCodeHint}>Share this with other players</Text>
-      </View>
+        <Text style={styles.roomCodeHint}>Share this code with other players</Text>
+      </OrnateBox>
 
-      <Text style={styles.sectionTitle}>Players ({players.length}/5)</Text>
-      <View style={styles.playerList}>
-        {players.map((player) => (
-          <View key={player.id} style={styles.playerRow}>
-            <Text style={styles.playerName}>
-              {player.name}
-              {player.isHost && ' (Host)'}
-            </Text>
-            {player.name === playerName && (
-              <Text style={styles.youLabel}>You</Text>
-            )}
+      <DiamondDivider color={THEME.border} />
+
+      <View style={styles.lobbyContent}>
+        <Text style={styles.sectionTitle}>Passengers ({players.length}/5)</Text>
+        <View style={styles.playerList}>
+          {players.map((player) => (
+            <View key={player.id} style={styles.playerRow}>
+              <View style={styles.playerNameContainer}>
+                <Text style={styles.playerName}>{player.name}</Text>
+                {player.isHost && (
+                  <View style={styles.hostBadge}>
+                    <Text style={styles.hostBadgeText}>HOST</Text>
+                  </View>
+                )}
+              </View>
+              {player.name === playerName && (
+                <Text style={styles.youLabel}>You</Text>
+              )}
+            </View>
+          ))}
+        </View>
+
+        {isHost ? (
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              players.length < 1 && styles.disabledButton,
+            ]}
+            onPress={onStartGame}
+            disabled={players.length < 1}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={players.length < 1 ? [THEME.bgCard, THEME.bgMid] : [THEME.burgundy, THEME.burgundyDark]}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>
+                {players.length < 1 ? 'Need 2+ Players' : 'Start Game'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.waitingContainer}>
+            <Text style={styles.waitingText}>Awaiting departure...</Text>
           </View>
-        ))}
+        )}
       </View>
 
-      {isHost ? (
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            players.length < 1 && styles.disabledButton,
-          ]}
-          onPress={onStartGame}
-          disabled={players.length < 1}
-        >
-          <Text style={styles.buttonText}>
-            {players.length < 1 ? 'Need 2+ Players' : 'Start Game'}
-          </Text>
-        </TouchableOpacity>
-      ) : (
-        <Text style={styles.waitingText}>Waiting for host to start...</Text>
-      )}
-
-      <TouchableOpacity style={styles.backButton} onPress={onLeave}>
-        <Text style={styles.leaveText}>Leave Room</Text>
+      <TouchableOpacity style={styles.textButton} onPress={onLeave}>
+        <Text style={styles.dangerText}>Leave Room</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -1123,62 +1142,89 @@ const styles = StyleSheet.create({
     color: '#95a5a6',
     fontSize: 16,
   },
+  // Lobby styles
   roomCodeBox: {
-    backgroundColor: 'rgba(52, 152, 219, 0.2)',
-    borderWidth: 2,
-    borderColor: '#3498db',
-    borderRadius: 16,
-    padding: 24,
     alignItems: 'center',
-    marginBottom: 32,
     width: '100%',
   },
   roomCodeLabel: {
-    color: '#95a5a6',
-    fontSize: 14,
+    ...TYPE.caption,
+    fontWeight: '600',
+    color: THEME.textSecondary,
+    letterSpacing: 2,
   },
   roomCodeText: {
-    color: '#3498db',
-    fontSize: 48,
-    fontWeight: 'bold',
+    ...TYPE.displayL,
+    color: THEME.brass,
     letterSpacing: 12,
+    marginVertical: SPACING.sm,
   },
   roomCodeHint: {
-    color: '#95a5a6',
-    fontSize: 12,
-    marginTop: 8,
+    ...TYPE.caption,
+    color: THEME.textMuted,
+  },
+  lobbyContent: {
+    width: '100%',
+    flex: 1,
   },
   sectionTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    alignSelf: 'flex-start',
+    ...TYPE.heading,
+    color: THEME.textPrimary,
+    marginBottom: SPACING.lg,
   },
   playerList: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
   },
   playerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 8,
+    alignItems: 'center',
+    backgroundColor: 'rgba(42, 35, 32, 0.8)',
+    borderWidth: 1,
+    borderColor: THEME.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  playerNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
   },
   playerName: {
-    color: '#fff',
-    fontSize: 16,
+    ...TYPE.body,
+    fontWeight: '500',
+    color: THEME.textPrimary,
+  },
+  hostBadge: {
+    backgroundColor: THEME.brass,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: RADIUS.sm,
+  },
+  hostBadgeText: {
+    ...TYPE.micro,
+    fontWeight: '700',
+    color: THEME.textInverse,
   },
   youLabel: {
-    color: '#95a5a6',
+    ...TYPE.bodyS,
+    color: THEME.textMuted,
     fontStyle: 'italic',
   },
+  waitingContainer: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl,
+  },
   waitingText: {
-    color: '#95a5a6',
-    fontSize: 16,
-    marginTop: 16,
+    ...TYPE.body,
+    color: THEME.textSecondary,
+    fontStyle: 'italic',
+  },
+  dangerText: {
+    ...TYPE.bodyS,
+    color: THEME.danger,
   },
   leaveText: {
     color: '#e74c3c',
