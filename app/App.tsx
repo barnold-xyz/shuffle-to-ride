@@ -81,10 +81,6 @@ function OrnateBox({ children, style }: { children: React.ReactNode; style?: obj
       colors={['rgba(107, 28, 35, 0.3)', 'rgba(74, 18, 25, 0.2)']}
       style={[decorStyles.ornateBox, style]}
     >
-      <ArtDecoCorner position="topLeft" />
-      <ArtDecoCorner position="topRight" />
-      <ArtDecoCorner position="bottomLeft" />
-      <ArtDecoCorner position="bottomRight" />
       {children}
     </LinearGradient>
   );
@@ -479,7 +475,7 @@ function HomeScreen({
     return (
       <LinearGradient
         colors={[THEME.bgMid, THEME.bgDark]}
-        style={styles.screenContainer}
+        style={[styles.screenContainer, styles.homeContainer]}
       >
         <View style={styles.titleContainer}>
           <Text style={styles.title}>Shuffle to Ride</Text>
@@ -517,7 +513,7 @@ function HomeScreen({
   return (
     <LinearGradient
       colors={[THEME.bgMid, THEME.bgDark]}
-      style={styles.screenContainer}
+      style={[styles.screenContainer, styles.homeContainer]}
     >
       <Text style={styles.screenTitle}>
         {mode === 'create' ? 'Create Room' : 'Join Room'}
@@ -1120,6 +1116,9 @@ const styles = StyleSheet.create({
     padding: SPACING.xl,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  homeContainer: {
+    paddingTop: 60,
   },
 
   // Title styles

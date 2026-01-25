@@ -12,11 +12,11 @@ export const THEME = {
   brassLight: '#E8C547',
   brassDark: '#A68B1F',
 
-  // Background - aged wood & leather
-  bgDark: '#1A1512',
-  bgMid: '#2A2320',
-  bgCard: '#352E28',
-  bgElevated: '#3F3731',
+  // Background - forest green tones
+  bgDark: '#0F1A14',
+  bgMid: '#1A2A20',
+  bgCard: '#243528',
+  bgElevated: '#2E3F31',
 
   // Text - cream & parchment
   textPrimary: '#F5EDE0',
@@ -34,9 +34,9 @@ export const THEME = {
   info: '#4A6B8B',
 
   // Decorative
-  border: '#5A4F45',
-  borderLight: '#6A5F55',
-  shadow: '#0D0B09',
+  border: '#3A4F3E',
+  borderLight: '#4A5F4E',
+  shadow: '#050A07',
 } as const;
 
 // Type scale
