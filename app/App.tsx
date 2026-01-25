@@ -789,7 +789,7 @@ function GameScreen({
 
       {/* Hand */}
       <LinearGradient
-        colors={['rgba(201, 162, 39, 0.15)', 'rgba(166, 139, 31, 0.1)']}
+        colors={['rgba(74, 124, 78, 0.2)', 'rgba(74, 124, 78, 0.1)']}
         style={styles.handSection}
       >
         <HandGrid
@@ -1368,11 +1368,11 @@ const styles = StyleSheet.create({
   faceUpContainer: {
     flexDirection: 'column',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(74, 124, 78, 0.15)',
+    backgroundColor: 'rgba(107, 28, 35, 0.2)',
     padding: SPACING.md,
     borderRadius: RADIUS.xl,
     borderWidth: 1,
-    borderColor: 'rgba(74, 124, 78, 0.3)',
+    borderColor: 'rgba(107, 28, 35, 0.4)',
   },
   faceUpSlot: {
     borderRadius: RADIUS.lg,
@@ -1471,7 +1471,7 @@ const styles = StyleSheet.create({
   handSection: {
     padding: SPACING.lg,
     borderTopWidth: 2,
-    borderTopColor: 'rgba(201, 162, 39, 0.4)',
+    borderTopColor: 'rgba(74, 124, 78, 0.4)',
   },
   handLabel: {
     ...TYPE.bodyS,
