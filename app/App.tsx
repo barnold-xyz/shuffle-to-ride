@@ -716,7 +716,7 @@ function GameScreen({
 
   return (
     <LinearGradient
-      colors={[THEME.bgElevated, THEME.bgMid, THEME.bgDark]}
+      colors={[THEME.burgundy, THEME.burgundyDark, '#2A1215']}
       style={styles.gameContainer}
     >
       {/* Turn indicator */}
@@ -1368,11 +1368,11 @@ const styles = StyleSheet.create({
   faceUpContainer: {
     flexDirection: 'column',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(107, 28, 35, 0.2)',
+    backgroundColor: 'rgba(74, 124, 78, 0.2)',
     padding: SPACING.md,
     borderRadius: RADIUS.xl,
     borderWidth: 1,
-    borderColor: 'rgba(107, 28, 35, 0.4)',
+    borderColor: 'rgba(74, 124, 78, 0.4)',
   },
   faceUpSlot: {
     borderRadius: RADIUS.lg,
@@ -1384,9 +1384,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(107, 28, 35, 0.2)',
+    backgroundColor: 'rgba(74, 124, 78, 0.2)',
     borderWidth: 1,
-    borderColor: 'rgba(107, 28, 35, 0.4)',
+    borderColor: 'rgba(74, 124, 78, 0.4)',
     borderRadius: RADIUS.xl,
     padding: SPACING.lg,
   },
