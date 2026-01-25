@@ -208,15 +208,16 @@ function CardComponent({
         {
           width,
           height,
-          borderColor: selected ? '#fff' : 'transparent',
-          borderWidth: selected ? 3 : 0,
-          transform: selected ? [{ translateY: -10 }] : [],
+          borderColor: selected ? THEME.brass : 'transparent',
+          borderWidth: selected ? 3 : 2,
+          transform: selected ? [{ translateY: -8 }, { scale: 1.02 }] : [],
         },
+        selected && styles.cardSelected,
       ]}
     >
       <Image
         source={CARD_IMAGES[card.color]}
-        style={[styles.cardImage, { width, height }]}
+        style={[styles.cardImage, { width: width - 4, height: height - 4 }]}
         resizeMode="cover"
       />
     </TouchableOpacity>
@@ -723,8 +724,8 @@ function GameScreen({
         </View>
 
         {/* Players info */}
-        <View style={styles.playersInfo}>
-          <Text style={styles.sectionLabel}>Players</Text>
+        <View style={styles.playersPanel}>
+          <Text style={styles.sectionLabel}>Passengers</Text>
           {state.players.map((player) => (
             <View
               key={player.id}
@@ -734,8 +735,13 @@ function GameScreen({
                   styles.playerInfoActive,
               ]}
             >
-              <Text style={styles.playerInfoName}>{player.name}</Text>
-              <Text style={styles.playerInfoCards}>{player.cardCount} cards</Text>
+              <View style={styles.playerInfoLeft}>
+                {player.id === state.currentTurn?.playerId && (
+                  <View style={styles.activePlayerDot} />
+                )}
+                <Text style={styles.playerInfoName}>{player.name}</Text>
+              </View>
+              <Text style={styles.playerInfoCards}>{player.cardCount}</Text>
             </View>
           ))}
         </View>
@@ -1367,29 +1373,45 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     marginTop: SPACING.xs,
   },
-  playersInfo: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+  // Players panel
+  playersPanel: {
+    backgroundColor: THEME.bgCard,
+    borderRadius: RADIUS.xl,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   playerInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.xs,
   },
   playerInfoActive: {
-    backgroundColor: 'rgba(52, 152, 219, 0.3)',
+    backgroundColor: 'rgba(201, 162, 39, 0.15)',
+  },
+  playerInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  activePlayerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: THEME.brass,
   },
   playerInfoName: {
-    color: '#fff',
-    fontSize: 14,
+    ...TYPE.bodyS,
+    color: THEME.textPrimary,
   },
   playerInfoCards: {
-    color: '#95a5a6',
-    fontSize: 14,
+    ...TYPE.bodyS,
+    color: THEME.textSecondary,
   },
   handSection: {
     padding: 16,
@@ -1444,14 +1466,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
   },
+  // Card styles
   card: {
-    borderRadius: 8,
+    borderRadius: RADIUS.lg,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    borderColor: 'transparent',
+    borderWidth: 2,
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardSelected: {
+    shadowColor: THEME.brass,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   cardImage: {
-    borderRadius: 8,
+    borderRadius: RADIUS.md,
   },
   locomotiveText: {
     color: '#fff',
