@@ -235,13 +235,11 @@ function HandGrid({
   onColorPress: (color: CardColor) => void;
   discardMode: boolean;
 }) {
-  // Group cards by color and count
   const colorCounts = cards.reduce((acc, card) => {
     acc[card.color] = (acc[card.color] || 0) + 1;
     return acc;
   }, {} as Record<CardColor, number>);
 
-  // Get colors that have cards, maintaining a consistent order
   const colorOrder: CardColor[] = [
     'red', 'orange', 'yellow', 'green', 'blue',
     'purple', 'black', 'white', 'locomotive'
@@ -250,9 +248,9 @@ function HandGrid({
 
   return (
     <View>
-      <Text style={styles.sectionLabel}>
+      <Text style={styles.handLabel}>
         Your Hand ({cards.length} cards)
-        {discardMode && ' - Tap to select'}
+        {discardMode && ' — Tap to select'}
       </Text>
       <View style={styles.handGrid}>
         {ownedColors.map((color) => {
@@ -282,13 +280,13 @@ function HandGrid({
                 {discardMode && isSelected && (
                   <View style={styles.selectedOverlay}>
                     <Text style={styles.selectedOverlayText}>
-                      {selected}/{count}
+                      {selected}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={styles.handGridCount}>
-                {discardMode && selected > 0 ? `${selected}/${count}` : count}
+              <Text style={[styles.handGridCount, isSelected && styles.handGridCountSelected]}>
+                {discardMode && selected > 0 ? `${selected}/${count}` : `×${count}`}
               </Text>
             </TouchableOpacity>
           );
@@ -748,7 +746,10 @@ function GameScreen({
       </ScrollView>
 
       {/* Hand */}
-      <View style={styles.handSection}>
+      <LinearGradient
+        colors={[THEME.bgCard, THEME.bgMid]}
+        style={styles.handSection}
+      >
         <HandGrid
           cards={state.hand}
           selectedCounts={selectedCounts}
@@ -761,15 +762,21 @@ function GameScreen({
           {discardMode ? (
             <>
               <TouchableOpacity
-                style={styles.confirmButton}
+                style={styles.actionButtonPrimary}
                 onPress={handleConfirmDiscard}
+                activeOpacity={0.8}
               >
-                <Text style={styles.buttonText}>
-                  Discard ({totalSelected})
-                </Text>
+                <LinearGradient
+                  colors={[THEME.success, '#3A6C3E']}
+                  style={styles.actionButtonGradient}
+                >
+                  <Text style={styles.actionButtonText}>
+                    Discard ({totalSelected})
+                  </Text>
+                </LinearGradient>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={styles.actionButtonText}
                 onPress={() => {
                   setDiscardMode(false);
                   setSelectedCounts({} as Record<CardColor, number>);
@@ -781,23 +788,33 @@ function GameScreen({
           ) : (
             <>
               <TouchableOpacity
-                style={styles.discardButton}
+                style={styles.actionButtonSecondary}
                 onPress={() => setDiscardMode(true)}
+                activeOpacity={0.8}
               >
-                <Text style={styles.buttonText}>Claim Route</Text>
+                <Text style={styles.actionButtonSecondaryText}>Claim Route</Text>
               </TouchableOpacity>
               {isMyTurn && cardsDrawn > 0 && (
-                <TouchableOpacity style={styles.endTurnButton} onPress={onEndTurn}>
-                  <Text style={styles.buttonText}>End Turn</Text>
+                <TouchableOpacity
+                  style={styles.actionButtonWarning}
+                  onPress={onEndTurn}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={[THEME.warning, '#A66A12']}
+                    style={styles.actionButtonGradient}
+                  >
+                    <Text style={styles.actionButtonText}>End Turn</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               )}
               <TouchableOpacity style={styles.leaveButton} onPress={onLeave}>
-                <Text style={styles.leaveText}>Leave</Text>
+                <Text style={styles.dangerText}>Leave</Text>
               </TouchableOpacity>
             </>
           )}
         </View>
-      </View>
+      </LinearGradient>
     </View>
   );
 }
@@ -1413,43 +1430,56 @@ const styles = StyleSheet.create({
     ...TYPE.bodyS,
     color: THEME.textSecondary,
   },
+  // Hand section
   handSection: {
-    padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    padding: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: THEME.border,
   },
-  handContainer: {
-    paddingVertical: 8,
-    gap: 8,
+  handLabel: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textSecondary,
+    marginBottom: SPACING.md,
   },
   handGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    gap: 12,
+    gap: SPACING.md,
   },
   handGridItem: {
     alignItems: 'center',
     width: '30%',
   },
   handGridCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.lg,
     overflow: 'hidden',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: 'transparent',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   handGridCardSelected: {
-    borderColor: '#27ae60',
+    borderColor: THEME.brass,
+    shadowColor: THEME.brass,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
   },
   handGridImage: {
     width: 100,
     height: 70,
-    borderRadius: 5,
   },
   handGridCount: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 4,
+    ...TYPE.bodyS,
+    fontWeight: '700',
+    color: THEME.textPrimary,
+    marginTop: SPACING.xs,
+  },
+  handGridCountSelected: {
+    color: THEME.brass,
   },
   selectedOverlay: {
     position: 'absolute',
@@ -1457,14 +1487,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(39, 174, 96, 0.7)',
+    backgroundColor: 'rgba(74, 124, 78, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   selectedOverlayText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...TYPE.heading,
+    color: THEME.textPrimary,
   },
   // Card styles
   card: {
@@ -1494,41 +1523,58 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
+  // Action buttons
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    marginTop: 12,
+    alignItems: 'center',
+    gap: SPACING.md,
+    marginTop: SPACING.lg,
   },
-  discardButton: {
-    backgroundColor: '#9b59b6',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+  actionButtonPrimary: {
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  endTurnButton: {
-    backgroundColor: '#e67e22',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+  actionButtonSecondary: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    backgroundColor: THEME.bgCard,
   },
-  confirmButton: {
-    backgroundColor: '#27ae60',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+  actionButtonSecondaryText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textSecondary,
   },
-  cancelButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+  actionButtonWarning: {
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+  },
+  actionButtonGradient: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+  },
+  actionButtonText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textPrimary,
   },
   cancelText: {
-    color: '#95a5a6',
-    fontSize: 14,
+    ...TYPE.bodyS,
+    color: THEME.textMuted,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   leaveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   toast: {
     position: 'absolute',
