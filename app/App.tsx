@@ -1052,7 +1052,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="light-content" backgroundColor={THEME.bgDark} />
       {state.screen === 'home' && (
         <HomeScreen
           onCreateRoom={handleCreateRoom}
@@ -1201,20 +1201,6 @@ const styles = StyleSheet.create({
     ...TYPE.body,
   },
 
-  // Legacy styles (kept for other screens)
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  backButton: {
-    marginTop: 24,
-    padding: 12,
-  },
-  backButtonText: {
-    color: '#95a5a6',
-    fontSize: 16,
-  },
   // Lobby styles
   roomCodeBox: {
     alignItems: 'center',
@@ -1298,10 +1284,6 @@ const styles = StyleSheet.create({
   dangerText: {
     ...TYPE.bodyS,
     color: THEME.danger,
-  },
-  leaveText: {
-    color: '#e74c3c',
-    fontSize: 16,
   },
   // Game styles
   gameContainer: {
@@ -1543,11 +1525,6 @@ const styles = StyleSheet.create({
   },
   cardImage: {
     borderRadius: RADIUS.md,
-  },
-  locomotiveText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   // Action buttons
   actionRow: {
