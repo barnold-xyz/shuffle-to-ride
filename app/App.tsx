@@ -840,15 +840,6 @@ const styles = StyleSheet.create({
     color: '#95a5a6',
     marginBottom: 48,
   },
-  serverUrlContainer: {
-    width: '100%',
-    marginBottom: 24,
-  },
-  inputLabel: {
-    color: '#95a5a6',
-    fontSize: 12,
-    marginBottom: 4,
-  },
   input: {
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 8,
