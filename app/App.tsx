@@ -12,7 +12,6 @@ import {
   Image,
   Animated,
 } from 'react-native';
-import PartySocket from 'partysocket';
 import { config } from './src/config';
 import {
   Card,
@@ -580,7 +579,7 @@ function GameScreen({
 // ============ MAIN APP ============
 
 export default function App() {
-  const socketRef = useRef<PartySocket | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
   const [state, setState] = useState<GameState>({
     screen: 'home',
     roomCode: null,
@@ -624,18 +623,17 @@ export default function App() {
       socketRef.current.close();
     }
 
-    const socket = new PartySocket({
-      host: config.serverUrl.replace(/^wss?:\/\//, ''),
-      room: roomCode,
-    });
+    // Build PartyKit WebSocket URL: wss://project.user.partykit.dev/party/ROOMCODE
+    const wsUrl = `${config.serverUrl}/party/${roomCode}`;
+    const socket = new WebSocket(wsUrl);
 
-    socket.addEventListener('open', () => {
-      console.log('Connected:', socket.id);
-      setState((s) => ({ ...s, connected: true, mySocketId: socket.id }));
-    });
+    socket.onopen = () => {
+      console.log('Connected to room:', roomCode);
+      setState((s) => ({ ...s, connected: true }));
+    };
 
-    socket.addEventListener('close', () => {
-      console.log('Disconnected');
+    socket.onclose = (event) => {
+      console.log('Disconnected', event.code, event.reason);
       setState((s) => ({
         ...s,
         connected: false,
@@ -643,14 +641,18 @@ export default function App() {
         roomCode: null,
       }));
       setConnecting(false);
-    });
+    };
 
-    socket.addEventListener('message', (event) => {
+    socket.onerror = (error) => {
+      console.log('WebSocket error:', error);
+    };
+
+    socket.onmessage = (event) => {
       const { type, payload } = JSON.parse(event.data);
 
       switch (type) {
         case 'room-created':
-          setState((s) => ({ ...s, roomCode: payload.roomCode, screen: 'lobby' }));
+          setState((s) => ({ ...s, roomCode: payload.roomCode, mySocketId: payload.playerId, screen: 'lobby' }));
           setConnecting(false);
           break;
 
@@ -693,7 +695,7 @@ export default function App() {
           Alert.alert('Error', payload.message);
           break;
       }
-    });
+    };
 
     socketRef.current = socket;
     return socket;

@@ -142,10 +142,10 @@ export default class ShuffleToRideServer implements Server {
 
     console.log(`${playerName} joined room ${this.room.id}`);
 
-    // Send room confirmation to the joining player
+    // Send room confirmation to the joining player (include their ID so they know who they are)
     this.sendToConnection(conn, {
       type: 'room-created',
-      payload: { roomCode: this.room.id },
+      payload: { roomCode: this.room.id, playerId: conn.id },
     });
 
     // Broadcast updated player list

@@ -8,7 +8,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260124.0",
-    "partykit": "^0.0.111",
+    "partykit": "^0.0.115",
     "typescript": "^5.0.0"
   }
 }
