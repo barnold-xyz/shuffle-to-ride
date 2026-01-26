@@ -716,12 +716,12 @@ function GameScreen({
 
   return (
     <LinearGradient
-      colors={[THEME.burgundy, THEME.burgundyDark, '#2A1215']}
+      colors={[THEME.bgMid, THEME.bgDark]}
       style={styles.gameContainer}
     >
       {/* Turn indicator */}
       <LinearGradient
-        colors={['#2A4A2E', '#1F3A22']}
+        colors={[THEME.bgElevated, THEME.bgMid]}
         style={styles.turnBar}
       >
         <View>
@@ -786,7 +786,7 @@ function GameScreen({
 
       {/* Hand */}
       <LinearGradient
-        colors={['#2A4A2E', '#1F3A22']}
+        colors={[THEME.bgCard, THEME.bgMid]}
         style={styles.handSection}
       >
         <HandGrid
@@ -1317,8 +1317,8 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
-    borderBottomWidth: 2,
-    borderBottomColor: THEME.brass,
+    borderBottomWidth: 1,
+    borderBottomColor: THEME.border,
   },
   turnText: {
     ...TYPE.bodyL,
@@ -1365,11 +1365,11 @@ const styles = StyleSheet.create({
   faceUpContainer: {
     flexDirection: 'column',
     gap: SPACING.sm,
-    backgroundColor: '#2A4A2E',
+    backgroundColor: 'rgba(107, 28, 35, 0.15)',
     padding: SPACING.md,
-    borderRadius: RADIUS.xl,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: THEME.brass,
+    borderColor: THEME.border,
   },
   faceUpSlot: {
     borderRadius: RADIUS.lg,
@@ -1381,10 +1381,10 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#2A4A2E',
+    backgroundColor: 'rgba(107, 28, 35, 0.15)',
     borderWidth: 1,
-    borderColor: THEME.brass,
-    borderRadius: RADIUS.xl,
+    borderColor: THEME.border,
+    borderRadius: RADIUS.lg,
     padding: SPACING.lg,
   },
   deckDisabled: {
@@ -1426,10 +1426,10 @@ const styles = StyleSheet.create({
   },
   // Players panel
   playersPanel: {
-    backgroundColor: '#2A4A2E',
-    borderRadius: RADIUS.xl,
+    backgroundColor: 'rgba(42, 35, 32, 0.8)',
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: THEME.brass,
+    borderColor: THEME.border,
     padding: SPACING.md,
     marginBottom: SPACING.lg,
   },
@@ -1467,8 +1467,8 @@ const styles = StyleSheet.create({
   // Hand section
   handSection: {
     padding: SPACING.lg,
-    borderTopWidth: 2,
-    borderTopColor: THEME.brass,
+    borderTopWidth: 1,
+    borderTopColor: THEME.border,
   },
   handLabel: {
     ...TYPE.bodyS,
