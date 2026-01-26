@@ -55,6 +55,7 @@ cd app
 npx expo install --check                                         # Fix dependency mismatches
 npx expo-doctor                                                  # Check for common issues
 # Bump "version" in app.json for production releases
+# Bump "ios.buildNumber" in app.json for each iOS submission
 npx eas-cli build --profile preview --platform android           # Android APK
 npx eas-cli build --profile production --platform ios            # iOS
 npx eas-cli submit --platform ios                                # Submit to TestFlight

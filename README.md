@@ -90,7 +90,7 @@ npx expo install --check    # Fix dependency mismatches
 npx expo-doctor             # Check for common issues
 ```
 
-For production releases, bump `version` in `app.json` so users see the new version number.
+For production releases, bump `version` in `app.json` so users see the new version number. For iOS, also increment `ios.buildNumber` before each TestFlight submission.
 
 Then use the build commands above, and redistribute the APK or submit to TestFlight.
 
