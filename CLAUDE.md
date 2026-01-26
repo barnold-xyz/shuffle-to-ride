@@ -38,6 +38,27 @@ npx expo start
 ```
 Scan QR code with Expo Go app. The app automatically connects to the appropriate server based on environment.
 
+## Deploying App Updates
+
+### OTA Update (JS changes only)
+For TypeScript/JavaScript code changes, styling, and assets - instant, no app store review:
+```bash
+cd app
+npx eas-cli update --branch preview --message "Description"      # Android
+npx eas-cli update --branch production --message "Description"   # iOS
+```
+
+### Full Rebuild (native changes)
+Required when changing `package.json`, `app.json`, native dependencies, or Expo SDK:
+```bash
+cd app
+npx eas-cli build --profile preview --platform android           # Android APK
+npx eas-cli build --profile production --platform ios            # iOS
+npx eas-cli submit --platform ios                                # Submit to TestFlight
+```
+
+**Rule of thumb:** Changed only `.ts`/`.tsx` files? Use OTA. Changed `package.json` or `app.json`? Rebuild.
+
 ## Key Files
 
 ### Server (`server/src/`)

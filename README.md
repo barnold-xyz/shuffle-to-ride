@@ -61,6 +61,33 @@ npx eas-cli submit --platform ios
 
 After submitting, go to App Store Connect → TestFlight to add testers.
 
+## Updating the App
+
+There are two ways to push changes to users:
+
+### OTA Update (instant, no app store review)
+
+For JavaScript/TypeScript code changes, styling, and assets:
+
+```bash
+cd app
+npx eas-cli update --branch preview --message "Description of changes"      # Android
+npx eas-cli update --branch production --message "Description of changes"   # iOS
+```
+
+Users get the update automatically next time they open the app.
+
+### Full Rebuild (requires reinstall)
+
+Required when changing:
+- Native dependencies (npm packages with native code)
+- App configuration (`app.json` - permissions, icons, splash screen)
+- Expo SDK version
+
+Use the build commands above, then redistribute the APK or submit to TestFlight.
+
+**Rule of thumb:** If you only changed `.ts`/`.tsx` files, use OTA update. If you changed `package.json`, `app.json`, or added native features, rebuild.
+
 ## Development
 
 ### Server
