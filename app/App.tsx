@@ -12,7 +12,9 @@ import {
   Image,
   Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { config } from './src/config';
+import { THEME, TYPE, SPACING, RADIUS } from './src/theme';
 import {
   Card,
   CardColor,
@@ -23,6 +25,158 @@ import {
   CARD_COLORS,
 } from './src/types';
 import { CARD_IMAGES } from './src/cardImages';
+
+// ============ DECORATIVE COMPONENTS ============
+
+function DiamondDivider({ color = THEME.brass }: { color?: string }) {
+  return (
+    <View style={decorStyles.dividerContainer}>
+      <View style={[decorStyles.dividerLine, { backgroundColor: color }]} />
+      <View style={[decorStyles.diamond, { borderColor: color }]} />
+      <View style={[decorStyles.dividerLine, { backgroundColor: color }]} />
+    </View>
+  );
+}
+
+function ArtDecoCorner({ position }: { position: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight' }) {
+  const isRight = position === 'topRight' || position === 'bottomRight';
+  const isBottom = position === 'bottomLeft' || position === 'bottomRight';
+
+  return (
+    <View
+      style={[
+        decorStyles.corner,
+        isRight && decorStyles.cornerRight,
+        isBottom && decorStyles.cornerBottom,
+      ]}
+    >
+      <View
+        style={[
+          decorStyles.cornerLineH,
+          isRight && decorStyles.cornerLineHRight,
+          isBottom && decorStyles.cornerLineHBottom,
+        ]}
+      />
+      <View
+        style={[
+          decorStyles.cornerLineV,
+          isRight && decorStyles.cornerLineVRight,
+          isBottom && decorStyles.cornerLineVBottom,
+        ]}
+      />
+      <View
+        style={[
+          decorStyles.cornerDot,
+          isRight && decorStyles.cornerDotRight,
+          isBottom && decorStyles.cornerDotBottom,
+        ]}
+      />
+    </View>
+  );
+}
+
+function OrnateBox({ children, style }: { children: React.ReactNode; style?: object }) {
+  return (
+    <LinearGradient
+      colors={['rgba(107, 28, 35, 0.3)', 'rgba(74, 18, 25, 0.2)']}
+      style={[decorStyles.ornateBox, style]}
+    >
+      {children}
+    </LinearGradient>
+  );
+}
+
+const decorStyles = StyleSheet.create({
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+  },
+  diamond: {
+    width: 8,
+    height: 8,
+    borderWidth: 1,
+    transform: [{ rotate: '45deg' }],
+    marginHorizontal: SPACING.md,
+    backgroundColor: 'transparent',
+  },
+  corner: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    top: 0,
+    left: 0,
+  },
+  cornerRight: {
+    left: undefined,
+    right: 0,
+  },
+  cornerBottom: {
+    top: undefined,
+    bottom: 0,
+  },
+  cornerLineH: {
+    position: 'absolute',
+    top: -1,
+    left: -1,
+    width: 18,
+    height: 2,
+    backgroundColor: THEME.brass,
+  },
+  cornerLineHRight: {
+    left: undefined,
+    right: -1,
+  },
+  cornerLineHBottom: {
+    top: undefined,
+    bottom: -1,
+  },
+  cornerLineV: {
+    position: 'absolute',
+    top: -1,
+    left: -1,
+    width: 2,
+    height: 18,
+    backgroundColor: THEME.brass,
+  },
+  cornerLineVRight: {
+    left: undefined,
+    right: -1,
+  },
+  cornerLineVBottom: {
+    top: undefined,
+    bottom: -1,
+  },
+  cornerDot: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: THEME.brass,
+  },
+  cornerDotRight: {
+    left: undefined,
+    right: 6,
+  },
+  cornerDotBottom: {
+    top: undefined,
+    bottom: 6,
+  },
+  ornateBox: {
+    borderWidth: 2,
+    borderColor: THEME.brass,
+    borderRadius: RADIUS.lg,
+    padding: SPACING.xl,
+    position: 'relative',
+  },
+});
 
 function generateRoomCode(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -60,15 +214,16 @@ function CardComponent({
         {
           width,
           height,
-          borderColor: selected ? '#fff' : 'transparent',
-          borderWidth: selected ? 3 : 0,
-          transform: selected ? [{ translateY: -10 }] : [],
+          borderColor: selected ? THEME.brass : 'transparent',
+          borderWidth: selected ? 3 : 2,
+          transform: selected ? [{ translateY: -8 }, { scale: 1.02 }] : [],
         },
+        selected && styles.cardSelected,
       ]}
     >
       <Image
         source={CARD_IMAGES[card.color]}
-        style={[styles.cardImage, { width, height }]}
+        style={[styles.cardImage, { width: width - 4, height: height - 4 }]}
         resizeMode="cover"
       />
     </TouchableOpacity>
@@ -86,13 +241,11 @@ function HandGrid({
   onColorPress: (color: CardColor) => void;
   discardMode: boolean;
 }) {
-  // Group cards by color and count
   const colorCounts = cards.reduce((acc, card) => {
     acc[card.color] = (acc[card.color] || 0) + 1;
     return acc;
   }, {} as Record<CardColor, number>);
 
-  // Get colors that have cards, maintaining a consistent order
   const colorOrder: CardColor[] = [
     'red', 'orange', 'yellow', 'green', 'blue',
     'purple', 'black', 'white', 'locomotive'
@@ -101,9 +254,9 @@ function HandGrid({
 
   return (
     <View>
-      <Text style={styles.sectionLabel}>
+      <Text style={styles.handLabel}>
         Your Hand ({cards.length} cards)
-        {discardMode && ' - Tap to select'}
+        {discardMode && ' — Tap to select'}
       </Text>
       <View style={styles.handGrid}>
         {ownedColors.map((color) => {
@@ -133,13 +286,13 @@ function HandGrid({
                 {discardMode && isSelected && (
                   <View style={styles.selectedOverlay}>
                     <Text style={styles.selectedOverlayText}>
-                      {selected}/{count}
+                      {selected}
                     </Text>
                   </View>
                 )}
               </View>
-              <Text style={styles.handGridCount}>
-                {discardMode && selected > 0 ? `${selected}/${count}` : count}
+              <Text style={[styles.handGridCount, isSelected && styles.handGridCountSelected]}>
+                {discardMode && selected > 0 ? `${selected}/${count}` : `×${count}`}
               </Text>
             </TouchableOpacity>
           );
@@ -194,48 +347,91 @@ function DrawDeck({
       onPress={onPress}
       disabled={disabled}
       style={[styles.deckContainer, disabled && styles.deckDisabled]}
+      activeOpacity={0.7}
     >
       <View style={styles.deckStack}>
-        <View style={[styles.deckCard, styles.deckCard3]} />
-        <View style={[styles.deckCard, styles.deckCard2]} />
-        <View style={[styles.deckCard, styles.deckCard1]}>
+        <LinearGradient
+          colors={[THEME.bgElevated, THEME.bgCard]}
+          style={[styles.deckCard, styles.deckCard3]}
+        />
+        <LinearGradient
+          colors={[THEME.bgElevated, THEME.bgCard]}
+          style={[styles.deckCard, styles.deckCard2]}
+        />
+        <LinearGradient
+          colors={[THEME.bgElevated, THEME.bgCard]}
+          style={[styles.deckCard, styles.deckCard1]}
+        >
           <Text style={styles.deckQuestion}>?</Text>
-        </View>
+        </LinearGradient>
       </View>
       <Text style={styles.deckCount}>{deckCount} cards</Text>
-      {!disabled && <Text style={styles.deckHint}>Tap to draw</Text>}
+      {!disabled && <Text style={styles.deckHint}>TAP TO DRAW</Text>}
     </TouchableOpacity>
   );
 }
 
 function Toast({ message }: { message: string | null }) {
   const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(20)).current;
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
     if (message) {
       setVisible(true);
-      Animated.sequence([
+      Animated.parallel([
         Animated.timing(opacity, {
           toValue: 1,
           duration: 200,
           useNativeDriver: true,
         }),
-        Animated.delay(2500),
-        Animated.timing(opacity, {
+        Animated.timing(translateY, {
           toValue: 0,
-          duration: 300,
+          duration: 200,
           useNativeDriver: true,
         }),
-      ]).start(() => setVisible(false));
+      ]).start();
+
+      const timeout = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+          Animated.timing(translateY, {
+            toValue: 20,
+            duration: 300,
+            useNativeDriver: true,
+          }),
+        ]).start(() => setVisible(false));
+      }, 2500);
+
+      return () => clearTimeout(timeout);
     }
-  }, [message, opacity]);
+  }, [message, opacity, translateY]);
 
   if (!visible || !message) return null;
 
   return (
-    <Animated.View style={[styles.toast, { opacity }]}>
+    <Animated.View
+      style={[
+        styles.toast,
+        {
+          opacity,
+          transform: [{ translateY }],
+        },
+      ]}
+    >
+      <View style={styles.toastHeader}>
+        <View style={styles.toastHeaderLine} />
+        <Text style={styles.toastHeaderText}>DISPATCH</Text>
+        <View style={styles.toastHeaderLine} />
+      </View>
       <Text style={styles.toastText}>{message}</Text>
+      <View style={styles.toastFooter}>
+        <Text style={styles.toastFooterText}>═══ END ═══</Text>
+      </View>
     </Animated.View>
   );
 }
@@ -277,71 +473,100 @@ function HomeScreen({
 
   if (mode === 'menu') {
     return (
-      <View style={styles.screenContainer}>
-        <Text style={styles.title}>Shuffle to Ride</Text>
-        <Text style={styles.subtitle}>Train Card Companion</Text>
+      <LinearGradient
+        colors={[THEME.bgMid, THEME.bgDark]}
+        style={[styles.screenContainer, styles.homeContainer]}
+      >
+        <View style={styles.titleContainer}>
+          <Text style={styles.title}>Shuffle to Ride</Text>
+          <Text style={styles.subtitle}>Train Card Companion</Text>
+        </View>
 
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => setMode('create')}
-        >
-          <Text style={styles.buttonText}>Create Room</Text>
-        </TouchableOpacity>
+        <DiamondDivider />
 
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => setMode('join')}
-        >
-          <Text style={styles.buttonText}>Join Room</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => setMode('create')}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={[THEME.burgundy, THEME.burgundyDark]}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>Create Room</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => setMode('join')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.secondaryButtonText}>Join Room</Text>
+          </TouchableOpacity>
+        </View>
+      </LinearGradient>
     );
   }
 
   return (
-    <View style={styles.screenContainer}>
-      <Text style={styles.title}>
+    <LinearGradient
+      colors={[THEME.bgMid, THEME.bgDark]}
+      style={[styles.screenContainer, styles.homeContainer]}
+    >
+      <Text style={styles.screenTitle}>
         {mode === 'create' ? 'Create Room' : 'Join Room'}
       </Text>
 
-      <TextInput
-        style={styles.input}
-        value={playerName}
-        onChangeText={setPlayerName}
-        placeholder="Your Name"
-        placeholderTextColor="#666"
-        autoCapitalize="words"
-      />
+      <DiamondDivider color={THEME.border} />
 
-      {mode === 'join' && (
+      <View style={styles.formContainer}>
         <TextInput
           style={styles.input}
-          value={roomCode}
-          onChangeText={setRoomCode}
-          placeholder="Room Code"
-          placeholderTextColor="#666"
-          autoCapitalize="characters"
-          maxLength={4}
+          value={playerName}
+          onChangeText={setPlayerName}
+          placeholder="Your Name"
+          placeholderTextColor={THEME.textMuted}
+          autoCapitalize="words"
         />
-      )}
+
+        {mode === 'join' && (
+          <TextInput
+            style={styles.input}
+            value={roomCode}
+            onChangeText={setRoomCode}
+            placeholder="Room Code"
+            placeholderTextColor={THEME.textMuted}
+            autoCapitalize="characters"
+            maxLength={4}
+          />
+        )}
+
+        <TouchableOpacity
+          style={[styles.primaryButton, connecting && styles.disabledButton]}
+          onPress={mode === 'create' ? handleCreate : handleJoin}
+          disabled={connecting}
+          activeOpacity={0.8}
+        >
+          <LinearGradient
+            colors={connecting ? [THEME.bgCard, THEME.bgMid] : [THEME.burgundy, THEME.burgundyDark]}
+            style={styles.primaryButtonGradient}
+          >
+            <Text style={styles.primaryButtonText}>
+              {connecting ? 'Connecting...' : mode === 'create' ? 'Create' : 'Join'}
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
 
       <TouchableOpacity
-        style={[styles.primaryButton, connecting && styles.disabledButton]}
-        onPress={mode === 'create' ? handleCreate : handleJoin}
-        disabled={connecting}
-      >
-        <Text style={styles.buttonText}>
-          {connecting ? 'Connecting...' : mode === 'create' ? 'Create' : 'Join'}
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.backButton}
+        style={styles.textButton}
         onPress={() => setMode('menu')}
       >
-        <Text style={styles.backButtonText}>Back</Text>
+        <Text style={styles.textButtonText}>Back</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -361,49 +586,68 @@ function LobbyScreen({
   onLeave: () => void;
 }) {
   return (
-    <View style={styles.screenContainer}>
-      <View style={styles.roomCodeBox}>
-        <Text style={styles.roomCodeLabel}>Room Code</Text>
+    <LinearGradient
+      colors={[THEME.bgMid, THEME.bgDark]}
+      style={[styles.screenContainer, styles.lobbyContainer]}
+    >
+      <OrnateBox style={styles.roomCodeBox}>
+        <Text style={styles.roomCodeLabel}>ROOM CODE</Text>
         <Text style={styles.roomCodeText}>{roomCode}</Text>
-        <Text style={styles.roomCodeHint}>Share this with other players</Text>
-      </View>
+        <Text style={styles.roomCodeHint}>Share this code with other players</Text>
+      </OrnateBox>
 
-      <Text style={styles.sectionTitle}>Players ({players.length}/5)</Text>
-      <View style={styles.playerList}>
-        {players.map((player) => (
-          <View key={player.id} style={styles.playerRow}>
-            <Text style={styles.playerName}>
-              {player.name}
-              {player.isHost && ' (Host)'}
-            </Text>
-            {player.name === playerName && (
-              <Text style={styles.youLabel}>You</Text>
-            )}
+      <DiamondDivider color={THEME.border} />
+
+      <View style={styles.lobbyContent}>
+        <Text style={styles.sectionTitle}>Passengers ({players.length}/5)</Text>
+        <View style={styles.playerList}>
+          {players.map((player) => (
+            <View key={player.id} style={styles.playerRow}>
+              <View style={styles.playerNameContainer}>
+                <Text style={styles.playerName}>{player.name}</Text>
+                {player.isHost && (
+                  <View style={styles.hostBadge}>
+                    <Text style={styles.hostBadgeText}>HOST</Text>
+                  </View>
+                )}
+              </View>
+              {player.name === playerName && (
+                <Text style={styles.youLabel}>You</Text>
+              )}
+            </View>
+          ))}
+        </View>
+
+        {isHost ? (
+          <TouchableOpacity
+            style={[
+              styles.primaryButton,
+              players.length < 1 && styles.disabledButton,
+            ]}
+            onPress={onStartGame}
+            disabled={players.length < 1}
+            activeOpacity={0.8}
+          >
+            <LinearGradient
+              colors={players.length < 1 ? [THEME.bgCard, THEME.bgMid] : [THEME.burgundy, THEME.burgundyDark]}
+              style={styles.primaryButtonGradient}
+            >
+              <Text style={styles.primaryButtonText}>
+                {players.length < 1 ? 'Need 2+ Players' : 'Start Game'}
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.waitingContainer}>
+            <Text style={styles.waitingText}>Awaiting departure...</Text>
           </View>
-        ))}
+        )}
       </View>
 
-      {isHost ? (
-        <TouchableOpacity
-          style={[
-            styles.primaryButton,
-            players.length < 1 && styles.disabledButton,
-          ]}
-          onPress={onStartGame}
-          disabled={players.length < 1}
-        >
-          <Text style={styles.buttonText}>
-            {players.length < 1 ? 'Need 2+ Players' : 'Start Game'}
-          </Text>
-        </TouchableOpacity>
-      ) : (
-        <Text style={styles.waitingText}>Waiting for host to start...</Text>
-      )}
-
-      <TouchableOpacity style={styles.backButton} onPress={onLeave}>
-        <Text style={styles.leaveText}>Leave Room</Text>
+      <TouchableOpacity style={styles.textButton} onPress={onLeave}>
+        <Text style={styles.dangerText}>Leave Room</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -471,19 +715,33 @@ function GameScreen({
   const totalSelected = Object.values(selectedCounts).reduce((sum, n) => sum + n, 0);
 
   return (
-    <View style={styles.gameContainer}>
+    <LinearGradient
+      colors={[THEME.bgMid, THEME.bgDark]}
+      style={styles.gameContainer}
+    >
       {/* Turn indicator */}
-      <View style={[styles.turnBar, isMyTurn && styles.turnBarActive]}>
-        <Text style={styles.turnText}>
-          {isMyTurn ? 'Your Turn' : `${currentPlayerName}'s Turn`}
-        </Text>
-        {isMyTurn && (
-          <Text style={styles.drawCount}>
-            Drawn: {cardsDrawn}/2
-            {state.currentTurn?.drewLocomotive && ' (locomotive)'}
+      <LinearGradient
+        colors={[THEME.bgElevated, THEME.bgMid]}
+        style={styles.turnBar}
+      >
+        <View>
+          <Text style={styles.turnText}>
+            {isMyTurn ? 'Your Turn' : `${currentPlayerName}'s Turn`}
           </Text>
+          {isMyTurn && (
+            <Text style={styles.drawCount}>
+              Drawn: {cardsDrawn}/2
+              {state.currentTurn?.drewLocomotive && ' (locomotive)'}
+            </Text>
+          )}
+        </View>
+        {isMyTurn && (
+          <View style={styles.turnIndicator}>
+            <View style={[styles.turnDot, styles.turnDotActive]} />
+            <View style={[styles.turnDot, cardsDrawn >= 1 && styles.turnDotActive]} />
+          </View>
         )}
-      </View>
+      </LinearGradient>
 
       <ScrollView style={styles.gameScroll}>
         {/* Draw area: Face-up cards on left, deck on right */}
@@ -503,8 +761,8 @@ function GameScreen({
         </View>
 
         {/* Players info */}
-        <View style={styles.playersInfo}>
-          <Text style={styles.sectionLabel}>Players</Text>
+        <View style={styles.playersPanel}>
+          <Text style={styles.sectionLabel}>Passengers</Text>
           {state.players.map((player) => (
             <View
               key={player.id}
@@ -514,15 +772,23 @@ function GameScreen({
                   styles.playerInfoActive,
               ]}
             >
-              <Text style={styles.playerInfoName}>{player.name}</Text>
-              <Text style={styles.playerInfoCards}>{player.cardCount} cards</Text>
+              <View style={styles.playerInfoLeft}>
+                {player.id === state.currentTurn?.playerId && (
+                  <View style={styles.activePlayerDot} />
+                )}
+                <Text style={styles.playerInfoName}>{player.name}</Text>
+              </View>
+              <Text style={styles.playerInfoCards}>{player.cardCount}</Text>
             </View>
           ))}
         </View>
       </ScrollView>
 
       {/* Hand */}
-      <View style={styles.handSection}>
+      <LinearGradient
+        colors={[THEME.bgCard, THEME.bgMid]}
+        style={styles.handSection}
+      >
         <HandGrid
           cards={state.hand}
           selectedCounts={selectedCounts}
@@ -535,15 +801,21 @@ function GameScreen({
           {discardMode ? (
             <>
               <TouchableOpacity
-                style={styles.confirmButton}
+                style={styles.actionButtonPrimary}
                 onPress={handleConfirmDiscard}
+                activeOpacity={0.8}
               >
-                <Text style={styles.buttonText}>
-                  Discard ({totalSelected})
-                </Text>
+                <LinearGradient
+                  colors={[THEME.success, '#3A6C3E']}
+                  style={styles.actionButtonGradient}
+                >
+                  <Text style={styles.actionButtonText}>
+                    Discard ({totalSelected})
+                  </Text>
+                </LinearGradient>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={styles.actionButtonText}
                 onPress={() => {
                   setDiscardMode(false);
                   setSelectedCounts({} as Record<CardColor, number>);
@@ -555,24 +827,34 @@ function GameScreen({
           ) : (
             <>
               <TouchableOpacity
-                style={styles.discardButton}
+                style={styles.actionButtonSecondary}
                 onPress={() => setDiscardMode(true)}
+                activeOpacity={0.8}
               >
-                <Text style={styles.buttonText}>Claim Route</Text>
+                <Text style={styles.actionButtonSecondaryText}>Claim Route</Text>
               </TouchableOpacity>
               {isMyTurn && cardsDrawn > 0 && (
-                <TouchableOpacity style={styles.endTurnButton} onPress={onEndTurn}>
-                  <Text style={styles.buttonText}>End Turn</Text>
+                <TouchableOpacity
+                  style={styles.actionButtonWarning}
+                  onPress={onEndTurn}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={[THEME.warning, '#A66A12']}
+                    style={styles.actionButtonGradient}
+                  >
+                    <Text style={styles.actionButtonText}>End Turn</Text>
+                  </LinearGradient>
                 </TouchableOpacity>
               )}
               <TouchableOpacity style={styles.leaveButton} onPress={onLeave}>
-                <Text style={styles.leaveText}>Leave</Text>
+                <Text style={styles.dangerText}>Leave</Text>
               </TouchableOpacity>
             </>
           )}
         </View>
-      </View>
-    </View>
+      </LinearGradient>
+    </LinearGradient>
   );
 }
 
@@ -783,7 +1065,7 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="light-content" backgroundColor={THEME.bgDark} />
       {state.screen === 'home' && (
         <HomeScreen
           onCreateRoom={handleCreateRoom}
@@ -821,200 +1103,305 @@ export default function App() {
 // ============ STYLES ============
 
 const styles = StyleSheet.create({
+  // Container styles
   container: {
     flex: 1,
-    backgroundColor: '#1a1a2e',
+    backgroundColor: THEME.bgDark,
   },
   screenContainer: {
     flex: 1,
-    padding: 24,
+    padding: SPACING.xl,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  homeContainer: {
+    justifyContent: 'flex-start',
+    paddingTop: 80,
+  },
+
+  // Title styles
+  titleContainer: {
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
+    ...TYPE.displayXL,
+    color: THEME.brass,
+    textAlign: 'center',
+    letterSpacing: 2,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#95a5a6',
-    marginBottom: 48,
+    ...TYPE.body,
+    color: THEME.textSecondary,
+    marginTop: SPACING.sm,
   },
-  input: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 8,
-    padding: 16,
-    color: '#fff',
-    fontSize: 16,
-    marginBottom: 16,
+  screenTitle: {
+    ...TYPE.displayM,
+    color: THEME.textPrimary,
+    marginBottom: SPACING.sm,
+  },
+
+  // Button container
+  buttonContainer: {
     width: '100%',
+    gap: SPACING.md,
   },
+
+  // Primary button (gradient with brass border)
   primaryButton: {
-    backgroundColor: '#3498db',
-    borderRadius: 8,
-    padding: 16,
     width: '100%',
-    alignItems: 'center',
-    marginBottom: 12,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.brass,
+    overflow: 'hidden',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
   },
-  secondaryButton: {
-    backgroundColor: '#27ae60',
-    borderRadius: 8,
-    padding: 16,
-    width: '100%',
+  primaryButtonGradient: {
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.xl,
     alignItems: 'center',
+  },
+  primaryButtonText: {
+    ...TYPE.body,
+    fontWeight: '600',
+    color: THEME.textPrimary,
+    letterSpacing: 0.5,
   },
   disabledButton: {
-    backgroundColor: '#2c3e50',
+    borderColor: THEME.border,
     opacity: 0.7,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+
+  // Secondary button (outlined)
+  secondaryButton: {
+    width: '100%',
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    paddingVertical: SPACING.lg - 2,
+    paddingHorizontal: SPACING.xl,
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   },
-  backButton: {
-    marginTop: 24,
-    padding: 12,
+  secondaryButtonText: {
+    ...TYPE.body,
+    fontWeight: '500',
+    color: THEME.textSecondary,
   },
-  backButtonText: {
-    color: '#95a5a6',
-    fontSize: 16,
+
+  // Text button (tertiary)
+  textButton: {
+    marginTop: SPACING.xl,
+    padding: SPACING.md,
+  },
+  textButtonText: {
+    ...TYPE.bodyS,
+    color: THEME.textMuted,
+  },
+
+  // Form styles
+  formContainer: {
+    width: '100%',
+    gap: SPACING.lg,
+  },
+  input: {
+    backgroundColor: THEME.bgMid,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.lg,
+    color: THEME.textPrimary,
+    ...TYPE.body,
+  },
+
+  // Lobby styles
+  lobbyContainer: {
+    justifyContent: 'flex-start',
+    paddingTop: 60,
   },
   roomCodeBox: {
-    backgroundColor: 'rgba(52, 152, 219, 0.2)',
-    borderWidth: 2,
-    borderColor: '#3498db',
-    borderRadius: 16,
-    padding: 24,
     alignItems: 'center',
-    marginBottom: 32,
     width: '100%',
   },
   roomCodeLabel: {
-    color: '#95a5a6',
-    fontSize: 14,
+    ...TYPE.caption,
+    fontWeight: '600',
+    color: THEME.textSecondary,
+    letterSpacing: 2,
   },
   roomCodeText: {
-    color: '#3498db',
-    fontSize: 48,
-    fontWeight: 'bold',
+    ...TYPE.displayL,
+    color: THEME.brass,
     letterSpacing: 12,
+    marginVertical: SPACING.sm,
   },
   roomCodeHint: {
-    color: '#95a5a6',
-    fontSize: 12,
-    marginTop: 8,
+    ...TYPE.caption,
+    color: THEME.textMuted,
+  },
+  lobbyContent: {
+    width: '100%',
+    flex: 1,
   },
   sectionTitle: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 16,
-    alignSelf: 'flex-start',
+    ...TYPE.heading,
+    color: THEME.textPrimary,
+    marginBottom: SPACING.lg,
   },
   playerList: {
     width: '100%',
-    marginBottom: 24,
+    marginBottom: SPACING.xl,
   },
   playerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 8,
+    alignItems: 'center',
+    backgroundColor: 'rgba(42, 35, 32, 0.8)',
+    borderWidth: 1,
+    borderColor: THEME.border,
+    borderRadius: RADIUS.md,
+    padding: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  playerNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
   },
   playerName: {
-    color: '#fff',
-    fontSize: 16,
+    ...TYPE.body,
+    fontWeight: '500',
+    color: THEME.textPrimary,
+  },
+  hostBadge: {
+    backgroundColor: THEME.brass,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 2,
+    borderRadius: RADIUS.sm,
+  },
+  hostBadgeText: {
+    ...TYPE.micro,
+    fontWeight: '700',
+    color: THEME.textInverse,
   },
   youLabel: {
-    color: '#95a5a6',
+    ...TYPE.bodyS,
+    color: THEME.textMuted,
     fontStyle: 'italic',
   },
-  waitingText: {
-    color: '#95a5a6',
-    fontSize: 16,
-    marginTop: 16,
+  waitingContainer: {
+    alignItems: 'center',
+    paddingVertical: SPACING.xl,
   },
-  leaveText: {
-    color: '#e74c3c',
-    fontSize: 16,
+  waitingText: {
+    ...TYPE.body,
+    color: THEME.textSecondary,
+    fontStyle: 'italic',
+  },
+  dangerText: {
+    ...TYPE.bodyS,
+    color: THEME.danger,
   },
   // Game styles
   gameContainer: {
     flex: 1,
   },
   turnBar: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  turnBarActive: {
-    backgroundColor: 'rgba(39, 174, 96, 0.3)',
+    paddingTop: 50,
+    paddingBottom: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(201, 162, 39, 0.4)',
   },
   turnText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    ...TYPE.bodyL,
+    color: THEME.textPrimary,
   },
   drawCount: {
-    color: '#95a5a6',
-    fontSize: 12,
-    marginTop: 4,
+    ...TYPE.caption,
+    color: THEME.textSecondary,
+    marginTop: 2,
+  },
+  turnIndicator: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  turnDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: THEME.bgCard,
+    borderWidth: 1,
+    borderColor: THEME.border,
+  },
+  turnDotActive: {
+    backgroundColor: THEME.brass,
+    borderColor: THEME.brassLight,
   },
   gameScroll: {
     flex: 1,
-    padding: 16,
+    padding: SPACING.lg,
   },
   sectionLabel: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    ...TYPE.caption,
+    fontWeight: '600',
+    color: THEME.brass,
+    marginBottom: SPACING.sm,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   drawArea: {
     flexDirection: 'row',
-    marginBottom: 24,
-    gap: 16,
+    marginBottom: SPACING.xl,
+    gap: SPACING.lg,
   },
   faceUpContainer: {
     flexDirection: 'column',
-    gap: 6,
+    gap: SPACING.sm,
+    backgroundColor: 'rgba(107, 28, 35, 0.25)',
+    padding: SPACING.md,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(201, 162, 39, 0.4)',
   },
   faceUpSlot: {
-    padding: 2,
+    borderRadius: RADIUS.lg,
   },
   faceUpDisabled: {
     opacity: 0.5,
   },
   deckContainer: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 12,
-    flex: 1,
+    backgroundColor: 'rgba(107, 28, 35, 0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 162, 39, 0.4)',
+    borderRadius: RADIUS.lg,
+    padding: SPACING.lg,
   },
   deckDisabled: {
     opacity: 0.5,
   },
   deckStack: {
     width: 60,
-    height: 75,
+    height: 80,
     position: 'relative',
   },
   deckCard: {
     position: 'absolute',
-    width: 45,
-    height: 65,
-    backgroundColor: '#34495e',
-    borderRadius: 4,
+    width: 50,
+    height: 70,
+    borderRadius: RADIUS.md,
     borderWidth: 2,
-    borderColor: '#2c3e50',
+    borderColor: THEME.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1022,82 +1409,111 @@ const styles = StyleSheet.create({
   deckCard2: { top: 3, left: 4 },
   deckCard1: { top: 6, left: 8 },
   deckQuestion: {
-    color: '#95a5a6',
-    fontSize: 18,
-    fontWeight: 'bold',
+    ...TYPE.heading,
+    color: THEME.brass,
   },
   deckCount: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginTop: 6,
+    ...TYPE.bodyS,
+    fontWeight: '700',
+    color: THEME.textPrimary,
+    marginTop: SPACING.sm,
   },
   deckHint: {
-    color: '#3498db',
-    fontSize: 10,
-    marginTop: 2,
+    ...TYPE.micro,
+    color: THEME.brass,
+    letterSpacing: 1,
+    marginTop: SPACING.xs,
   },
-  playersInfo: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 16,
+  // Players panel
+  playersPanel: {
+    backgroundColor: 'rgba(107, 28, 35, 0.2)',
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    borderColor: 'rgba(201, 162, 39, 0.3)',
+    padding: SPACING.md,
+    marginBottom: SPACING.lg,
   },
   playerInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.md,
+    marginTop: SPACING.xs,
   },
   playerInfoActive: {
-    backgroundColor: 'rgba(52, 152, 219, 0.3)',
+    backgroundColor: 'rgba(201, 162, 39, 0.15)',
+  },
+  playerInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  activePlayerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: THEME.brass,
   },
   playerInfoName: {
-    color: '#fff',
-    fontSize: 14,
+    ...TYPE.bodyS,
+    color: THEME.textPrimary,
   },
   playerInfoCards: {
-    color: '#95a5a6',
-    fontSize: 14,
+    ...TYPE.bodyS,
+    color: THEME.textSecondary,
   },
+  // Hand section
   handSection: {
-    padding: 16,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    padding: SPACING.lg,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(201, 162, 39, 0.4)',
   },
-  handContainer: {
-    paddingVertical: 8,
-    gap: 8,
+  handLabel: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textSecondary,
+    marginBottom: SPACING.md,
   },
   handGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'flex-start',
-    gap: 12,
+    gap: SPACING.md,
   },
   handGridItem: {
     alignItems: 'center',
     width: '30%',
   },
   handGridCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.lg,
     overflow: 'hidden',
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: 'transparent',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   handGridCardSelected: {
-    borderColor: '#27ae60',
+    borderColor: THEME.brass,
+    shadowColor: THEME.brass,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
   },
   handGridImage: {
     width: 100,
     height: 70,
-    borderRadius: 5,
   },
   handGridCount: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginTop: 4,
+    ...TYPE.bodyS,
+    fontWeight: '700',
+    color: THEME.textPrimary,
+    marginTop: SPACING.xs,
+  },
+  handGridCountSelected: {
+    color: THEME.brass,
   },
   selectedOverlay: {
     position: 'absolute',
@@ -1105,79 +1521,140 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(39, 174, 96, 0.7)',
+    backgroundColor: 'rgba(74, 124, 78, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   selectedOverlayText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...TYPE.heading,
+    color: THEME.textPrimary,
   },
+  // Card styles
   card: {
-    borderRadius: 8,
+    borderRadius: RADIUS.lg,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    borderColor: 'transparent',
+    borderWidth: 2,
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardSelected: {
+    shadowColor: THEME.brass,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
   },
   cardImage: {
-    borderRadius: 8,
+    borderRadius: RADIUS.md,
   },
-  locomotiveText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
+  // Action buttons
   actionRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    marginTop: 12,
+    alignItems: 'center',
+    gap: SPACING.md,
+    marginTop: SPACING.lg,
   },
-  discardButton: {
-    backgroundColor: '#9b59b6',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+  actionButtonPrimary: {
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  endTurnButton: {
-    backgroundColor: '#e67e22',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+  actionButtonSecondary: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.border,
+    backgroundColor: THEME.bgCard,
   },
-  confirmButton: {
-    backgroundColor: '#27ae60',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+  actionButtonSecondaryText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textSecondary,
   },
-  cancelButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+  actionButtonWarning: {
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+  },
+  actionButtonGradient: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+  },
+  actionButtonText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textPrimary,
   },
   cancelText: {
-    color: '#95a5a6',
-    fontSize: 14,
+    ...TYPE.bodyS,
+    color: THEME.textMuted,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   leaveButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
+  // Toast (Telegram style)
   toast: {
     position: 'absolute',
     bottom: 220,
-    left: 16,
-    right: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    zIndex: 100,
+    left: SPACING.lg,
+    right: SPACING.lg,
+    backgroundColor: '#F5EDE0',
+    borderWidth: 2,
+    borderColor: THEME.brass,
+    borderRadius: RADIUS.sm,
+    overflow: 'hidden',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+    elevation: 12,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+  },
+  toastHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.sm,
+  },
+  toastHeaderLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: THEME.brass,
+  },
+  toastHeaderText: {
+    ...TYPE.micro,
+    fontWeight: '700',
+    color: THEME.burgundy,
+    letterSpacing: 2,
+    marginHorizontal: SPACING.sm,
   },
   toastText: {
-    color: '#fff',
-    fontSize: 14,
+    ...TYPE.bodyS,
+    color: THEME.textInverse,
     textAlign: 'center',
+    fontWeight: '500',
+  },
+  toastFooter: {
+    alignItems: 'center',
+    marginTop: SPACING.sm,
+  },
+  toastFooterText: {
+    ...TYPE.micro,
+    color: THEME.brass,
+    letterSpacing: 1,
   },
 });
