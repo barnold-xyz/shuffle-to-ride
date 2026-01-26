@@ -52,6 +52,9 @@ npx eas-cli update --branch production --message "Description"   # iOS
 Required when changing `package.json`, `app.json`, native dependencies, or Expo SDK:
 ```bash
 cd app
+npx expo install --check                                         # Fix dependency mismatches
+npx expo-doctor                                                  # Check for common issues
+# Bump "version" in app.json for production releases
 npx eas-cli build --profile preview --platform android           # Android APK
 npx eas-cli build --profile production --platform ios            # iOS
 npx eas-cli submit --platform ios                                # Submit to TestFlight

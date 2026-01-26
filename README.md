@@ -84,7 +84,15 @@ Required when changing:
 - App configuration (`app.json` - permissions, icons, splash screen)
 - Expo SDK version
 
-Use the build commands above, then redistribute the APK or submit to TestFlight.
+Before rebuilding:
+```bash
+npx expo install --check    # Fix dependency mismatches
+npx expo-doctor             # Check for common issues
+```
+
+For production releases, bump `version` in `app.json` so users see the new version number.
+
+Then use the build commands above, and redistribute the APK or submit to TestFlight.
 
 **Rule of thumb:** If you only changed `.ts`/`.tsx` files, use OTA update. If you changed `package.json`, `app.json`, or added native features, rebuild.
 
