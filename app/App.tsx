@@ -1318,7 +1318,7 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
-    borderBottomColor: THEME.border,
+    borderBottomColor: 'rgba(201, 162, 39, 0.4)',
   },
   turnText: {
     ...TYPE.bodyL,
@@ -1352,7 +1352,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     ...TYPE.caption,
     fontWeight: '600',
-    color: THEME.textSecondary,
+    color: THEME.brass,
     marginBottom: SPACING.sm,
     letterSpacing: 1,
     textTransform: 'uppercase',
@@ -1365,11 +1365,11 @@ const styles = StyleSheet.create({
   faceUpContainer: {
     flexDirection: 'column',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(107, 28, 35, 0.15)',
+    backgroundColor: 'rgba(107, 28, 35, 0.25)',
     padding: SPACING.md,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: THEME.border,
+    borderColor: 'rgba(201, 162, 39, 0.4)',
   },
   faceUpSlot: {
     borderRadius: RADIUS.lg,
@@ -1381,9 +1381,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(107, 28, 35, 0.15)',
+    backgroundColor: 'rgba(107, 28, 35, 0.25)',
     borderWidth: 1,
-    borderColor: THEME.border,
+    borderColor: 'rgba(201, 162, 39, 0.4)',
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
   },
@@ -1426,10 +1426,10 @@ const styles = StyleSheet.create({
   },
   // Players panel
   playersPanel: {
-    backgroundColor: 'rgba(42, 35, 32, 0.8)',
+    backgroundColor: 'rgba(107, 28, 35, 0.2)',
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: THEME.border,
+    borderColor: 'rgba(201, 162, 39, 0.3)',
     padding: SPACING.md,
     marginBottom: SPACING.lg,
   },
@@ -1468,7 +1468,7 @@ const styles = StyleSheet.create({
   handSection: {
     padding: SPACING.lg,
     borderTopWidth: 1,
-    borderTopColor: THEME.border,
+    borderTopColor: 'rgba(201, 162, 39, 0.4)',
   },
   handLabel: {
     ...TYPE.bodyS,
