@@ -93,6 +93,62 @@ Scan QR code with Expo Go app. The app automatically connects to the appropriate
 - Set `USE_LOCAL_SERVER = true` in `app/src/config.ts` to test against localhost instead of prod
 - PartyKit has Windows path bugs; use WSL for `npm run dev` and `npm run deploy`
 
+## UI Design: Railroad Heritage
+
+The app uses a **"Railroad Heritage"** design system inspired by the golden age of rail travel (1920s-30s). See `docs/plans/2026-01-25-railroad-heritage-design.md` for full specifications.
+
+### Design Principles
+
+1. **Refined, not garish** - Rich colors at low-medium opacity; avoid saturated solid backgrounds
+2. **Warm and elegant** - Aged wood tones, burgundy accents, brass highlights
+3. **Consistent across screens** - Same palette and treatment on home, lobby, and game screens
+4. **Brass as accent** - Use brass (`#C9A227`) for borders, labels, and highlights—not backgrounds
+
+### Color Usage
+
+| Element | Treatment |
+|---------|-----------|
+| Backgrounds | Wood-tone gradients (`bgMid` → `bgDark`) |
+| Containers | Semi-transparent burgundy tint (15-25% opacity) |
+| Borders | Semi-transparent brass (30-40% opacity) or muted border color |
+| Section labels | Brass colored |
+| Buttons | Burgundy gradient with brass border |
+| Text | Cream/parchment on dark backgrounds |
+
+### Theme File
+
+All colors and typography are defined in `app/src/theme.ts`. Always use theme constants:
+
+```typescript
+import { THEME, TYPE, SPACING, RADIUS } from './src/theme';
+
+// Colors
+backgroundColor: THEME.bgMid
+color: THEME.brass
+borderColor: THEME.border
+
+// Typography
+...TYPE.heading
+...TYPE.body
+
+// Spacing
+padding: SPACING.lg
+borderRadius: RADIUS.md
+```
+
+### Key Components
+
+- **DiamondDivider** - Horizontal rule with brass diamond accent
+- **OrnateBox** - Burgundy gradient container (used for room code display)
+- **LinearGradient** - Used for buttons, backgrounds, and sections
+
+### Anti-Patterns
+
+- ❌ Solid bright colors as backgrounds (too garish)
+- ❌ Brass borders everywhere (use sparingly)
+- ❌ Inconsistent treatment between screens
+- ❌ Generic dark gray/black without wood tones
+
 ## Future Enhancements
 
 - **Reconnection support** - Allow players to rejoin if they disconnect briefly
