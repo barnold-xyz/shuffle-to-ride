@@ -721,7 +721,7 @@ function GameScreen({
     >
       {/* Turn indicator */}
       <LinearGradient
-        colors={[THEME.bgElevated, THEME.bgMid]}
+        colors={['#1F3524', '#1A2E1F']}
         style={styles.turnBar}
       >
         <View>
@@ -786,7 +786,7 @@ function GameScreen({
 
       {/* Hand */}
       <LinearGradient
-        colors={[THEME.bgCard, THEME.bgMid]}
+        colors={['#1F3524', '#1A2E1F']}
         style={styles.handSection}
       >
         <HandGrid
@@ -1365,11 +1365,11 @@ const styles = StyleSheet.create({
   faceUpContainer: {
     flexDirection: 'column',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(107, 28, 35, 0.25)',
+    backgroundColor: '#1A2E1F',
     padding: SPACING.md,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: 'rgba(201, 162, 39, 0.4)',
+    borderColor: 'rgba(201, 162, 39, 0.35)',
   },
   faceUpSlot: {
     borderRadius: RADIUS.lg,
@@ -1381,9 +1381,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(107, 28, 35, 0.25)',
+    backgroundColor: '#1A2E1F',
     borderWidth: 1,
-    borderColor: 'rgba(201, 162, 39, 0.4)',
+    borderColor: 'rgba(201, 162, 39, 0.35)',
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
   },
@@ -1426,10 +1426,10 @@ const styles = StyleSheet.create({
   },
   // Players panel
   playersPanel: {
-    backgroundColor: 'rgba(107, 28, 35, 0.2)',
+    backgroundColor: '#1A2E1F',
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: 'rgba(201, 162, 39, 0.3)',
+    borderColor: 'rgba(201, 162, 39, 0.35)',
     padding: SPACING.md,
     marginBottom: SPACING.lg,
   },
