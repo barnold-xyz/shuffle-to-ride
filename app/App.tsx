@@ -565,7 +565,7 @@ function DrawDeck({
   );
 }
 
-function Toast({ message }: { message: string | null }) {
+function Toast({ message, duration = 2500 }: { message: string | null; duration?: number }) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(20)).current;
   const [visible, setVisible] = useState(false);
@@ -599,11 +599,11 @@ function Toast({ message }: { message: string | null }) {
             useNativeDriver: true,
           }),
         ]).start(() => setVisible(false));
-      }, 2500);
+      }, duration);
 
       return () => clearTimeout(timeout);
     }
-  }, [message, opacity, translateY]);
+  }, [message, duration, opacity, translateY]);
 
   if (!visible || !message) return null;
 
@@ -1120,7 +1120,7 @@ export default function App() {
     mySocketId: null,
   });
   const [connecting, setConnecting] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; duration: number } | null>(null);
   const toastKeyRef = useRef(0);
   const [savedSession, setSavedSession] = useState<SavedGameSession | null>(null);
 
@@ -1158,22 +1158,40 @@ export default function App() {
     playerName: string;
     cardColor?: string;
     count?: number;
-  }): string => {
+    colorBreakdown?: Record<string, number>;
+  }): { message: string; duration: number } | null => {
+    const COLOR_ORDER = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'black', 'white', 'locomotive'];
+
     switch (action.type) {
       case 'drew-from-deck':
-        return `${action.playerName} drew a card`;
+        return { message: `${action.playerName} drew a card`, duration: 3000 };
       case 'drew-face-up':
-        return `${action.playerName} drew a ${action.cardColor} card`;
-      case 'discarded':
-        return `${action.playerName} discarded ${action.count} card${action.count !== 1 ? 's' : ''} to claim a route`;
+        return { message: `${action.playerName} drew a ${action.cardColor} card`, duration: 3000 };
+      case 'discarded': {
+        let breakdown = '';
+        if (action.colorBreakdown) {
+          const parts: string[] = [];
+          for (const color of COLOR_ORDER) {
+            const count = action.colorBreakdown[color];
+            if (count) {
+              parts.push(`${count} ${color}`);
+            }
+          }
+          breakdown = parts.join(', ');
+        }
+        const message = breakdown
+          ? `${action.playerName} claimed a route with ${action.count} cards (${breakdown})`
+          : `${action.playerName} claimed a route with ${action.count} card${action.count !== 1 ? 's' : ''}`;
+        return { message, duration: 8000 };
+      }
       case 'turn-started':
-        return `${action.playerName}'s turn`;
+        return { message: `${action.playerName}'s turn`, duration: 5000 };
       case 'player-disconnected':
-        return `${action.playerName} disconnected`;
+        return { message: `${action.playerName} disconnected`, duration: 5000 };
       case 'player-reconnected':
-        return `${action.playerName} reconnected`;
+        return { message: `${action.playerName} reconnected`, duration: 5000 };
       default:
-        return '';
+        return null;
     }
   }, []);
 
@@ -1274,10 +1292,10 @@ export default function App() {
           break;
 
         case 'player-action':
-          const message = formatActionMessage(payload);
-          if (message) {
+          const result = formatActionMessage(payload);
+          if (result) {
             toastKeyRef.current += 1;
-            setToastMessage(message);
+            setToast(result);
           }
           break;
 
@@ -1436,8 +1454,8 @@ export default function App() {
           onLeave={handleLeave}
         />
       )}
-      {state.screen === 'game' && (
-        <Toast key={toastKeyRef.current} message={toastMessage} />
+      {state.screen === 'game' && toast && (
+        <Toast key={toastKeyRef.current} message={toast.message} duration={toast.duration} />
       )}
       <ThemedAlert
         visible={alertConfig.visible}
