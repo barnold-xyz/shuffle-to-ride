@@ -801,21 +801,21 @@ function GameScreen({
           {discardMode ? (
             <>
               <TouchableOpacity
-                style={styles.actionButtonPrimary}
+                style={styles.discardButton}
                 onPress={handleConfirmDiscard}
                 activeOpacity={0.8}
               >
                 <LinearGradient
                   colors={[THEME.success, '#3A6C3E']}
-                  style={styles.actionButtonGradient}
+                  style={styles.discardButtonGradient}
                 >
-                  <Text style={styles.actionButtonText}>
+                  <Text style={styles.discardButtonText}>
                     Discard ({totalSelected})
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.actionButtonText}
+                style={styles.cancelButton}
                 onPress={() => {
                   setDiscardMode(false);
                   setSelectedCounts({} as Record<CardColor, number>);
@@ -1600,6 +1600,26 @@ const styles = StyleSheet.create({
     ...TYPE.bodyS,
     fontWeight: '600',
     color: THEME.textPrimary,
+  },
+  discardButton: {
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.brass,
+    overflow: 'hidden',
+  },
+  discardButtonGradient: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  discardButtonText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textPrimary,
+  },
+  cancelButton: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   actionButtonWarning: {
     borderRadius: RADIUS.md,
