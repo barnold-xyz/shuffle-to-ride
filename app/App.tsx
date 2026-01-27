@@ -25,6 +25,7 @@ import {
   CARD_COLORS,
 } from './src/types';
 import { CARD_IMAGES } from './src/cardImages';
+import { saveGameSession, getGameSession, clearGameSession, SavedGameSession } from './src/storage';
 
 // ============ DECORATIVE COMPONENTS ============
 
@@ -441,11 +442,17 @@ function Toast({ message }: { message: string | null }) {
 function HomeScreen({
   onCreateRoom,
   onJoinRoom,
+  onRejoinRoom,
+  onDismissSavedSession,
   connecting,
+  savedSession,
 }: {
   onCreateRoom: (name: string) => void;
   onJoinRoom: (name: string, code: string) => void;
+  onRejoinRoom: () => void;
+  onDismissSavedSession: () => void;
   connecting: boolean;
+  savedSession: SavedGameSession | null;
 }) {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
@@ -485,6 +492,32 @@ function HomeScreen({
         <DiamondDivider />
 
         <View style={styles.buttonContainer}>
+          {savedSession && (
+            <View style={styles.rejoinContainer}>
+              <TouchableOpacity
+                style={styles.primaryButton}
+                onPress={onRejoinRoom}
+                disabled={connecting}
+                activeOpacity={0.8}
+              >
+                <LinearGradient
+                  colors={connecting ? [THEME.bgCard, THEME.bgMid] : [THEME.success, '#3A6C3E']}
+                  style={styles.primaryButtonGradient}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {connecting ? 'Reconnecting...' : `Rejoin Room ${savedSession.roomCode}`}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.textButton}
+                onPress={onDismissSavedSession}
+              >
+                <Text style={styles.textButtonText}>Dismiss</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => setMode('create')}
@@ -770,13 +803,22 @@ function GameScreen({
                 styles.playerInfoRow,
                 player.id === state.currentTurn?.playerId &&
                   styles.playerInfoActive,
+                player.connected === false && styles.playerInfoDisconnected,
               ]}
             >
               <View style={styles.playerInfoLeft}>
                 {player.id === state.currentTurn?.playerId && (
                   <View style={styles.activePlayerDot} />
                 )}
-                <Text style={styles.playerInfoName}>{player.name}</Text>
+                <Text style={[
+                  styles.playerInfoName,
+                  player.connected === false && styles.playerInfoNameDisconnected,
+                ]}>
+                  {player.name}
+                </Text>
+                {player.connected === false && (
+                  <Text style={styles.disconnectedBadge}>OFFLINE</Text>
+                )}
               </View>
               <Text style={styles.playerInfoCards}>{player.cardCount}</Text>
             </View>
@@ -862,6 +904,7 @@ function GameScreen({
 
 export default function App() {
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTokenRef = useRef<string | null>(null);
   const [state, setState] = useState<GameState>({
     screen: 'home',
     roomCode: null,
@@ -879,6 +922,16 @@ export default function App() {
   const [connecting, setConnecting] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastKeyRef = useRef(0);
+  const [savedSession, setSavedSession] = useState<SavedGameSession | null>(null);
+
+  // Check for saved session on mount
+  useEffect(() => {
+    getGameSession().then((session) => {
+      if (session) {
+        setSavedSession(session);
+      }
+    });
+  }, []);
 
   const formatActionMessage = useCallback((action: {
     type: string;
@@ -895,6 +948,10 @@ export default function App() {
         return `${action.playerName} discarded ${action.count} card${action.count !== 1 ? 's' : ''} to claim a route`;
       case 'turn-started':
         return `${action.playerName}'s turn`;
+      case 'player-disconnected':
+        return `${action.playerName} disconnected`;
+      case 'player-reconnected':
+        return `${action.playerName} reconnected`;
       default:
         return '';
     }
@@ -927,6 +984,8 @@ export default function App() {
 
     socket.onerror = (error) => {
       console.log('WebSocket error:', error);
+      Alert.alert('Connection Error', 'Failed to connect to game server');
+      setConnecting(false);
     };
 
     socket.onmessage = (event) => {
@@ -934,7 +993,36 @@ export default function App() {
 
       switch (type) {
         case 'room-created':
-          setState((s) => ({ ...s, roomCode: payload.roomCode, mySocketId: payload.playerId, screen: 'lobby' }));
+          setState((s) => {
+            // Save session using the current state's playerName
+            saveGameSession({
+              roomCode: payload.roomCode,
+              reconnectToken: payload.reconnectToken,
+              playerName: s.playerName,
+            }).then(() => setSavedSession(null));
+            return { ...s, roomCode: payload.roomCode, mySocketId: payload.playerId, screen: 'lobby' };
+          });
+          reconnectTokenRef.current = payload.reconnectToken;
+          setConnecting(false);
+          break;
+
+        case 'room-rejoined':
+          setSavedSession((currentSavedSession) => {
+            reconnectTokenRef.current = currentSavedSession?.reconnectToken || null;
+            setState((s) => ({
+              ...s,
+              roomCode: currentSavedSession?.roomCode || null,
+              mySocketId: payload.playerId,
+              hand: payload.hand,
+              faceUpCards: payload.faceUpCards,
+              deckCount: payload.deckCount,
+              players: payload.players,
+              currentTurn: payload.currentTurn,
+              screen: payload.phase === 'playing' ? 'game' : 'lobby',
+              playerName: currentSavedSession?.playerName || '',
+            }));
+            return null; // Clear saved session
+          });
           setConnecting(false);
           break;
 
@@ -975,6 +1063,15 @@ export default function App() {
 
         case 'error':
           Alert.alert('Error', payload.message);
+          setConnecting(false);
+          // If we got an error while trying to rejoin, clear the invalid session and disconnect
+          setSavedSession((current) => {
+            if (current) {
+              clearGameSession();
+              socketRef.current?.close();
+            }
+            return null;
+          });
           break;
       }
     };
@@ -1016,6 +1113,26 @@ export default function App() {
     [setupSocket]
   );
 
+  const handleRejoinRoom = useCallback(() => {
+    if (!savedSession) return;
+
+    setConnecting(true);
+    const socket = setupSocket(savedSession.roomCode);
+    setState((s) => ({ ...s, playerName: savedSession.playerName, isHost: false }));
+
+    socket.addEventListener('open', () => {
+      socket.send(JSON.stringify({
+        type: 'rejoin-room',
+        payload: { reconnectToken: savedSession.reconnectToken }
+      }));
+    }, { once: true });
+  }, [savedSession, setupSocket]);
+
+  const handleDismissSavedSession = useCallback(() => {
+    clearGameSession();
+    setSavedSession(null);
+  }, []);
+
   const handleStartGame = useCallback(() => {
     socketRef.current?.send(JSON.stringify({ type: 'start-game' }));
   }, []);
@@ -1044,6 +1161,8 @@ export default function App() {
         style: 'destructive',
         onPress: () => {
           socketRef.current?.close();
+          clearGameSession(); // Clear saved session on intentional leave
+          setSavedSession(null);
           setState({
             screen: 'home',
             roomCode: null,
@@ -1070,7 +1189,10 @@ export default function App() {
         <HomeScreen
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
+          onRejoinRoom={handleRejoinRoom}
+          onDismissSavedSession={handleDismissSavedSession}
           connecting={connecting}
+          savedSession={savedSession}
         />
       )}
       {state.screen === 'lobby' && state.roomCode && (
@@ -1145,6 +1267,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     width: '100%',
     gap: SPACING.md,
+  },
+  rejoinContainer: {
+    marginBottom: SPACING.lg,
   },
 
   // Primary button (gradient with brass border)
@@ -1460,9 +1585,21 @@ const styles = StyleSheet.create({
     ...TYPE.bodyS,
     color: THEME.textPrimary,
   },
+  playerInfoNameDisconnected: {
+    color: THEME.textMuted,
+  },
   playerInfoCards: {
     ...TYPE.bodyS,
     color: THEME.textSecondary,
+  },
+  playerInfoDisconnected: {
+    opacity: 0.6,
+  },
+  disconnectedBadge: {
+    ...TYPE.micro,
+    color: THEME.warning,
+    fontWeight: '700',
+    marginLeft: SPACING.sm,
   },
   // Hand section
   handSection: {

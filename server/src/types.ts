@@ -19,6 +19,8 @@ export interface Player {
   name: string;
   hand: Card[];
   isHost: boolean;
+  reconnectToken: string;
+  connected: boolean;
 }
 
 export interface CurrentTurn {
@@ -47,6 +49,10 @@ export interface JoinRoomPayload {
   playerName: string;
 }
 
+export interface RejoinRoomPayload {
+  reconnectToken: string;
+}
+
 export interface DrawFaceUpPayload {
   index: number;
 }
@@ -58,10 +64,22 @@ export interface DiscardCardsPayload {
 // Server -> Client events
 export interface RoomCreatedPayload {
   roomCode: string;
+  playerId: string;
+  reconnectToken: string;
+}
+
+export interface RoomRejoinedPayload {
+  playerId: string;
+  hand: Card[];
+  faceUpCards: Card[];
+  deckCount: number;
+  players: Array<{ id: string; name: string; isHost: boolean; cardCount: number; connected: boolean }>;
+  currentTurn: CurrentTurn | null;
+  phase: 'lobby' | 'playing';
 }
 
 export interface PlayerJoinedPayload {
-  players: Array<{ id: string; name: string; isHost: boolean; cardCount: number }>;
+  players: Array<{ id: string; name: string; isHost: boolean; cardCount: number; connected: boolean }>;
 }
 
 export interface GameStartedPayload {
@@ -72,7 +90,7 @@ export interface GameStartedPayload {
 export interface GameStatePayload {
   faceUpCards: Card[];
   deckCount: number;
-  players: Array<{ id: string; name: string; isHost: boolean; cardCount: number }>;
+  players: Array<{ id: string; name: string; isHost: boolean; cardCount: number; connected: boolean }>;
   currentTurn: CurrentTurn | null;
 }
 

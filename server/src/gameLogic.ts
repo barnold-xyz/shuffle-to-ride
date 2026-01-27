@@ -59,12 +59,14 @@ export function generateRoomCode(): string {
   return code;
 }
 
-export function createPlayer(id: string, name: string, isHost: boolean): Player {
+export function createPlayer(id: string, name: string, isHost: boolean, reconnectToken: string): Player {
   return {
     id,
     name,
     hand: [],
     isHost,
+    reconnectToken,
+    connected: true,
   };
 }
 
@@ -216,17 +218,27 @@ export function reshuffleDiscardIntoDeck(state: GameState): void {
 }
 
 export function getNextPlayer(state: GameState): string | null {
-  if (state.players.length === 0) return null;
+  const connectedPlayers = state.players.filter((p) => p.connected);
+  if (connectedPlayers.length === 0) return null;
 
   if (!state.currentTurn) {
-    return state.players[0].id;
+    return connectedPlayers[0].id;
   }
 
+  // Find current player's index in full player list
   const currentIndex = state.players.findIndex(
     (p) => p.id === state.currentTurn!.playerId
   );
-  const nextIndex = (currentIndex + 1) % state.players.length;
-  return state.players[nextIndex].id;
+
+  // Find the next connected player
+  for (let i = 1; i <= state.players.length; i++) {
+    const nextIndex = (currentIndex + i) % state.players.length;
+    if (state.players[nextIndex].connected) {
+      return state.players[nextIndex].id;
+    }
+  }
+
+  return null;
 }
 
 export function startTurn(state: GameState, playerId: string): void {
@@ -270,11 +282,12 @@ export function isTurnComplete(state: GameState): boolean {
 
 export function getPublicPlayerInfo(
   players: Player[]
-): Array<{ id: string; name: string; isHost: boolean; cardCount: number }> {
+): Array<{ id: string; name: string; isHost: boolean; cardCount: number; connected: boolean }> {
   return players.map((p) => ({
     id: p.id,
     name: p.name,
     isHost: p.isHost,
     cardCount: p.hand.length,
+    connected: p.connected,
   }));
 }
