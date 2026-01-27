@@ -754,7 +754,7 @@ function GameScreen({
     >
       {/* Turn indicator */}
       <LinearGradient
-        colors={[THEME.bgElevated, THEME.bgMid]}
+        colors={['#18261B', '#141F17']}
         style={styles.turnBar}
       >
         <View>
@@ -828,7 +828,7 @@ function GameScreen({
 
       {/* Hand */}
       <LinearGradient
-        colors={[THEME.bgCard, THEME.bgMid]}
+        colors={['#18261B', '#141F17']}
         style={styles.handSection}
       >
         <HandGrid
@@ -843,21 +843,21 @@ function GameScreen({
           {discardMode ? (
             <>
               <TouchableOpacity
-                style={styles.actionButtonPrimary}
+                style={styles.discardButton}
                 onPress={handleConfirmDiscard}
                 activeOpacity={0.8}
               >
                 <LinearGradient
                   colors={[THEME.success, '#3A6C3E']}
-                  style={styles.actionButtonGradient}
+                  style={styles.discardButtonGradient}
                 >
-                  <Text style={styles.actionButtonText}>
+                  <Text style={styles.discardButtonText}>
                     Discard ({totalSelected})
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.actionButtonText}
+                style={styles.cancelButton}
                 onPress={() => {
                   setDiscardMode(false);
                   setSelectedCounts({} as Record<CardColor, number>);
@@ -869,11 +869,16 @@ function GameScreen({
           ) : (
             <>
               <TouchableOpacity
-                style={styles.actionButtonSecondary}
+                style={styles.claimRouteButton}
                 onPress={() => setDiscardMode(true)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.actionButtonSecondaryText}>Claim Route</Text>
+                <LinearGradient
+                  colors={[THEME.burgundy, THEME.burgundyDark]}
+                  style={styles.claimRouteGradient}
+                >
+                  <Text style={styles.claimRouteText}>Claim Route</Text>
+                </LinearGradient>
               </TouchableOpacity>
               {isMyTurn && cardsDrawn > 0 && (
                 <TouchableOpacity
@@ -1490,11 +1495,11 @@ const styles = StyleSheet.create({
   faceUpContainer: {
     flexDirection: 'column',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(107, 28, 35, 0.25)',
+    backgroundColor: '#141F17',
     padding: SPACING.md,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: 'rgba(201, 162, 39, 0.4)',
+    borderColor: 'rgba(201, 162, 39, 0.35)',
   },
   faceUpSlot: {
     borderRadius: RADIUS.lg,
@@ -1506,9 +1511,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(107, 28, 35, 0.25)',
+    backgroundColor: '#141F17',
     borderWidth: 1,
-    borderColor: 'rgba(201, 162, 39, 0.4)',
+    borderColor: 'rgba(201, 162, 39, 0.35)',
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
   },
@@ -1551,10 +1556,10 @@ const styles = StyleSheet.create({
   },
   // Players panel
   playersPanel: {
-    backgroundColor: 'rgba(107, 28, 35, 0.2)',
+    backgroundColor: '#141F17',
     borderRadius: RADIUS.lg,
     borderWidth: 1,
-    borderColor: 'rgba(201, 162, 39, 0.3)',
+    borderColor: 'rgba(201, 162, 39, 0.35)',
     padding: SPACING.md,
     marginBottom: SPACING.lg,
   },
@@ -1717,7 +1722,41 @@ const styles = StyleSheet.create({
   actionButtonSecondaryText: {
     ...TYPE.bodyS,
     fontWeight: '600',
-    color: THEME.textSecondary,
+  },
+  claimRouteButton: {
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.brass,
+    overflow: 'hidden',
+  },
+  claimRouteGradient: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+  },
+  claimRouteText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textPrimary,
+  },
+  discardButton: {
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.brass,
+    overflow: 'hidden',
+  },
+  discardButtonGradient: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  discardButtonText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textPrimary,
+  },
+  cancelButton: {
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
   },
   actionButtonWarning: {
     borderRadius: RADIUS.md,
