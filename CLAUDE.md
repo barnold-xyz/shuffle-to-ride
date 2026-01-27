@@ -92,6 +92,7 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 | Client → Server | Description |
 |-----------------|-------------|
 | `join-room` | Player joins with name (first player becomes host) |
+| `rejoin-room` | Player reconnects using saved token |
 | `start-game` | Host starts, deals cards |
 | `draw-from-deck` | Draw blind from deck |
 | `draw-face-up` | Draw specific face-up card |
@@ -100,8 +101,9 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 
 | Server → Client | Description |
 |-----------------|-------------|
-| `room-created` | Confirms room join with code |
-| `player-joined` | Updated player list |
+| `room-created` | Confirms room join with code and reconnect token |
+| `room-rejoined` | Confirms rejoin with full game state |
+| `player-joined` | Updated player list (includes connected status) |
 | `game-started` | Initial hand and face-up cards |
 | `game-state` | Broadcast face-up cards, deck count, turn info |
 | `your-hand` | Private hand update to individual player |
@@ -174,7 +176,18 @@ borderRadius: RADIUS.md
 - ❌ Inconsistent treatment between screens
 - ❌ Generic dark gray/black without wood tones
 
+## Reconnection Support
+
+Players can rejoin a game after losing their connection:
+
+1. **How it works**: When a player joins, the server generates a unique reconnect token. The client stores this token, along with the room code and player name, in AsyncStorage.
+
+2. **On disconnect**: The player is marked as disconnected but remains in the game. Their turn is skipped, and other players see an "OFFLINE" badge.
+
+3. **On reconnect**: When the app opens, if a saved session exists, the player sees a "Rejoin Room [CODE]" button. Tapping it reconnects them with their original hand intact.
+
+4. **Intentional leave**: Choosing "Leave" clears the saved session, preventing accidental rejoins.
+
 ## Future Enhancements
 
-- **Reconnection support** - Allow players to rejoin if they disconnect briefly
 - **Persistent rooms** - Save game state to survive server restarts

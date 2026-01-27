@@ -25,6 +25,7 @@ export interface PublicPlayer {
   name: string;
   isHost: boolean;
   cardCount: number;
+  connected: boolean;
 }
 
 export type Screen = 'home' | 'lobby' | 'game';

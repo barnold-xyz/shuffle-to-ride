@@ -7,6 +7,7 @@ import type {
 import {
   GameState,
   JoinRoomPayload,
+  RejoinRoomPayload,
   DrawFaceUpPayload,
   DiscardCardsPayload,
 } from './types';
@@ -29,6 +30,7 @@ import {
 // Message types from client
 type ClientMessage =
   | { type: 'join-room'; payload: JoinRoomPayload }
+  | { type: 'rejoin-room'; payload: RejoinRoomPayload }
   | { type: 'start-game' }
   | { type: 'draw-from-deck' }
   | { type: 'draw-face-up'; payload: DrawFaceUpPayload }
@@ -46,39 +48,32 @@ export default class ShuffleToRideServer implements Server {
   }
 
   onConnect(conn: Connection, ctx: ConnectionContext) {
-    console.log(`Player connected: ${conn.id} to room ${this.room.id}`);
-    // Send current player list to the new connection
-    this.sendToConnection(conn, {
-      type: 'player-joined',
-      payload: { players: getPublicPlayerInfo(this.state.players) },
-    });
+    console.log(`Connection opened: ${conn.id} to room ${this.room.id}`);
+    // Don't send player list yet - wait for join-room or rejoin-room message
   }
 
   onClose(conn: Connection) {
-    console.log(`Player disconnected: ${conn.id}`);
-
-    // Remove player from game
-    this.state.players = this.state.players.filter((p) => p.id !== conn.id);
-
-    // If host left, assign new host
-    if (this.state.players.length > 0 && !this.state.players.some((p) => p.isHost)) {
-      this.state.players[0].isHost = true;
+    const player = this.state.players.find((p) => p.id === conn.id);
+    if (!player) {
+      console.log(`Connection closed for unknown player: ${conn.id}`);
+      return;
     }
 
-    // If it was this player's turn, move to next
-    if (this.state.currentTurn?.playerId === conn.id) {
-      const nextPlayerId = getNextPlayer(this.state);
-      if (nextPlayerId) {
-        startTurn(this.state, nextPlayerId);
-      }
-    }
+    console.log(`Player disconnected: ${player.name} (${conn.id})`);
 
-    // Broadcast updated state
-    if (this.state.players.length > 0) {
-      this.broadcastPlayerList();
-      if (this.state.phase === 'playing') {
-        this.broadcastGameState();
-      }
+    // Mark player as disconnected (don't remove them)
+    player.connected = false;
+
+    // Notify other players
+    this.broadcastPlayerAction(conn.id, {
+      type: 'player-disconnected',
+      playerName: player.name,
+    });
+
+    // Broadcast updated player list (shows disconnected status)
+    this.broadcastPlayerList();
+    if (this.state.phase === 'playing') {
+      this.broadcastGameState();
     }
   }
 
@@ -100,6 +95,9 @@ export default class ShuffleToRideServer implements Server {
     switch (parsed.type) {
       case 'join-room':
         this.handleJoinRoom(conn, parsed.payload);
+        break;
+      case 'rejoin-room':
+        this.handleRejoinRoom(conn, parsed.payload);
         break;
       case 'start-game':
         this.handleStartGame(conn);
@@ -125,7 +123,7 @@ export default class ShuffleToRideServer implements Server {
 
   private handleJoinRoom(conn: Connection, payload: JoinRoomPayload) {
     const { playerName } = payload;
-    const isFirstPlayer = this.state.players.length === 0;
+    const isFirstPlayer = this.state.players.filter(p => p.connected).length === 0;
 
     if (this.state.phase !== 'lobby') {
       this.sendError(conn, 'Game already in progress');
@@ -137,19 +135,76 @@ export default class ShuffleToRideServer implements Server {
       return;
     }
 
-    const player = createPlayer(conn.id, playerName, isFirstPlayer);
+    // Generate a unique reconnect token
+    const reconnectToken = crypto.randomUUID();
+    const player = createPlayer(conn.id, playerName, isFirstPlayer, reconnectToken);
     this.state.players.push(player);
 
     console.log(`${playerName} joined room ${this.room.id}`);
 
-    // Send room confirmation to the joining player (include their ID so they know who they are)
+    // Send room confirmation to the joining player (include token for reconnection)
     this.sendToConnection(conn, {
       type: 'room-created',
-      payload: { roomCode: this.room.id, playerId: conn.id },
+      payload: { roomCode: this.room.id, playerId: conn.id, reconnectToken },
     });
 
     // Broadcast updated player list
     this.broadcastPlayerList();
+  }
+
+  private handleRejoinRoom(conn: Connection, payload: RejoinRoomPayload) {
+    const { reconnectToken } = payload;
+
+    // Find the player by their reconnect token
+    const player = this.state.players.find((p) => p.reconnectToken === reconnectToken);
+
+    if (!player) {
+      this.sendError(conn, 'Invalid reconnect token');
+      return;
+    }
+
+    if (player.connected) {
+      this.sendError(conn, 'Player is already connected');
+      return;
+    }
+
+    // Update player's connection ID and mark as connected
+    const oldId = player.id;
+    player.id = conn.id;
+    player.connected = true;
+
+    // Update currentTurn if it was this player's turn
+    if (this.state.currentTurn?.playerId === oldId) {
+      this.state.currentTurn.playerId = conn.id;
+    }
+
+    console.log(`${player.name} rejoined room ${this.room.id}`);
+
+    // Send full game state to rejoining player
+    this.sendToConnection(conn, {
+      type: 'room-rejoined',
+      payload: {
+        playerId: conn.id,
+        hand: player.hand,
+        faceUpCards: this.state.faceUpCards,
+        deckCount: this.state.deck.length,
+        players: getPublicPlayerInfo(this.state.players),
+        currentTurn: this.state.currentTurn,
+        phase: this.state.phase,
+      },
+    });
+
+    // Notify other players
+    this.broadcastPlayerAction(conn.id, {
+      type: 'player-reconnected',
+      playerName: player.name,
+    });
+
+    // Broadcast updated player list
+    this.broadcastPlayerList();
+    if (this.state.phase === 'playing') {
+      this.broadcastGameState();
+    }
   }
 
   private handleStartGame(conn: Connection) {
@@ -405,7 +460,7 @@ export default class ShuffleToRideServer implements Server {
   private broadcastPlayerAction(
     excludeConnectionId: string,
     action: {
-      type: 'drew-from-deck' | 'drew-face-up' | 'discarded' | 'turn-started';
+      type: 'drew-from-deck' | 'drew-face-up' | 'discarded' | 'turn-started' | 'player-disconnected' | 'player-reconnected';
       playerName: string;
       cardColor?: string;
       count?: number;
