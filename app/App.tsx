@@ -827,11 +827,16 @@ function GameScreen({
           ) : (
             <>
               <TouchableOpacity
-                style={styles.actionButtonSecondary}
+                style={styles.claimRouteButton}
                 onPress={() => setDiscardMode(true)}
                 activeOpacity={0.8}
               >
-                <Text style={styles.actionButtonSecondaryText}>Claim Route</Text>
+                <LinearGradient
+                  colors={[THEME.burgundy, THEME.burgundyDark]}
+                  style={styles.claimRouteGradient}
+                >
+                  <Text style={styles.claimRouteText}>Claim Route</Text>
+                </LinearGradient>
               </TouchableOpacity>
               {isMyTurn && cardsDrawn > 0 && (
                 <TouchableOpacity
@@ -1580,7 +1585,21 @@ const styles = StyleSheet.create({
   actionButtonSecondaryText: {
     ...TYPE.bodyS,
     fontWeight: '600',
-    color: THEME.textSecondary,
+  },
+  claimRouteButton: {
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    borderColor: THEME.brass,
+    overflow: 'hidden',
+  },
+  claimRouteGradient: {
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.md,
+  },
+  claimRouteText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textPrimary,
   },
   actionButtonWarning: {
     borderRadius: RADIUS.md,
