@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  Alert,
   SafeAreaView,
   StatusBar,
   Image,
   Animated,
+  Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { config } from './src/config';
@@ -86,6 +86,199 @@ function OrnateBox({ children, style }: { children: React.ReactNode; style?: obj
     </LinearGradient>
   );
 }
+
+// Themed Alert Component
+interface ThemedAlertButton {
+  text: string;
+  onPress?: () => void;
+  style?: 'default' | 'cancel' | 'destructive';
+}
+
+interface ThemedAlertProps {
+  visible: boolean;
+  title: string;
+  message?: string;
+  buttons?: ThemedAlertButton[];
+  onDismiss: () => void;
+}
+
+function ThemedAlert({ visible, title, message, buttons, onDismiss }: ThemedAlertProps) {
+  const alertButtons = buttons || [{ text: 'OK', onPress: onDismiss }];
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onDismiss}
+    >
+      <View style={alertStyles.overlay}>
+        <View style={alertStyles.container}>
+          <LinearGradient
+            colors={[THEME.bgElevated, THEME.bgCard]}
+            style={alertStyles.content}
+          >
+            <View style={alertStyles.header}>
+              <View style={alertStyles.headerLine} />
+              <Text style={alertStyles.headerText}>NOTICE</Text>
+              <View style={alertStyles.headerLine} />
+            </View>
+
+            <Text style={alertStyles.title}>{title}</Text>
+            {message && <Text style={alertStyles.message}>{message}</Text>}
+
+            <View style={alertStyles.buttonRow}>
+              {alertButtons.map((button, index) => {
+                const isDestructive = button.style === 'destructive';
+                const isCancel = button.style === 'cancel';
+
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      alertStyles.button,
+                      isCancel && alertStyles.buttonCancel,
+                      isDestructive && alertStyles.buttonDestructive,
+                    ]}
+                    onPress={() => {
+                      button.onPress?.();
+                      onDismiss();
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    {isDestructive ? (
+                      <LinearGradient
+                        colors={[THEME.danger, THEME.dangerDark]}
+                        style={alertStyles.buttonGradient}
+                      >
+                        <Text style={alertStyles.buttonText}>{button.text}</Text>
+                      </LinearGradient>
+                    ) : isCancel ? (
+                      <Text style={alertStyles.buttonTextCancel}>{button.text}</Text>
+                    ) : (
+                      <LinearGradient
+                        colors={[THEME.burgundy, THEME.burgundyDark]}
+                        style={alertStyles.buttonGradient}
+                      >
+                        <Text style={alertStyles.buttonText}>{button.text}</Text>
+                      </LinearGradient>
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={alertStyles.footer}>
+              <Text style={alertStyles.footerText}>═══ ◆ ═══</Text>
+            </View>
+          </LinearGradient>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+const alertStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(13, 11, 9, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xl,
+  },
+  container: {
+    width: '100%',
+    maxWidth: 320,
+    borderRadius: RADIUS.lg,
+    borderWidth: 2,
+    borderColor: THEME.brass,
+    overflow: 'hidden',
+    shadowColor: THEME.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.8,
+    shadowRadius: 24,
+    elevation: 16,
+  },
+  content: {
+    padding: SPACING.xl,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: SPACING.lg,
+  },
+  headerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: THEME.brass,
+  },
+  headerText: {
+    ...TYPE.micro,
+    fontWeight: '700',
+    color: THEME.brass,
+    letterSpacing: 2,
+    marginHorizontal: SPACING.md,
+  },
+  title: {
+    ...TYPE.heading,
+    color: THEME.textPrimary,
+    textAlign: 'center',
+    marginBottom: SPACING.sm,
+  },
+  message: {
+    ...TYPE.body,
+    color: THEME.textSecondary,
+    textAlign: 'center',
+    marginBottom: SPACING.xl,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+    justifyContent: 'center',
+  },
+  button: {
+    flex: 1,
+    borderRadius: RADIUS.md,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(201, 162, 39, 0.4)',
+  },
+  buttonCancel: {
+    backgroundColor: 'transparent',
+    borderColor: THEME.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING.md,
+  },
+  buttonDestructive: {
+    borderColor: THEME.danger,
+  },
+  buttonGradient: {
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    alignItems: 'center',
+  },
+  buttonText: {
+    ...TYPE.bodyS,
+    fontWeight: '600',
+    color: THEME.textPrimary,
+  },
+  buttonTextCancel: {
+    ...TYPE.bodyS,
+    fontWeight: '500',
+    color: THEME.textMuted,
+  },
+  footer: {
+    alignItems: 'center',
+    marginTop: SPACING.lg,
+  },
+  footerText: {
+    ...TYPE.caption,
+    color: THEME.brass,
+    letterSpacing: 2,
+  },
+});
 
 const decorStyles = StyleSheet.create({
   dividerContainer: {
@@ -446,6 +639,7 @@ function HomeScreen({
   onDismissSavedSession,
   connecting,
   savedSession,
+  showAlert,
 }: {
   onCreateRoom: (name: string) => void;
   onJoinRoom: (name: string, code: string) => void;
@@ -453,6 +647,7 @@ function HomeScreen({
   onDismissSavedSession: () => void;
   connecting: boolean;
   savedSession: SavedGameSession | null;
+  showAlert: (title: string, message?: string, buttons?: ThemedAlertButton[]) => void;
 }) {
   const [playerName, setPlayerName] = useState('');
   const [roomCode, setRoomCode] = useState('');
@@ -460,7 +655,7 @@ function HomeScreen({
 
   const handleCreate = () => {
     if (!playerName.trim()) {
-      Alert.alert('Error', 'Please enter your name');
+      showAlert('Missing Name', 'Please enter your name');
       return;
     }
     onCreateRoom(playerName.trim());
@@ -468,11 +663,11 @@ function HomeScreen({
 
   const handleJoin = () => {
     if (!playerName.trim()) {
-      Alert.alert('Error', 'Please enter your name');
+      showAlert('Missing Name', 'Please enter your name');
       return;
     }
     if (!roomCode.trim()) {
-      Alert.alert('Error', 'Please enter room code');
+      showAlert('Missing Code', 'Please enter room code');
       return;
     }
     onJoinRoom(playerName.trim(), roomCode.trim().toUpperCase());
@@ -929,6 +1124,26 @@ export default function App() {
   const toastKeyRef = useRef(0);
   const [savedSession, setSavedSession] = useState<SavedGameSession | null>(null);
 
+  // Alert state
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message?: string;
+    buttons?: ThemedAlertButton[];
+  }>({ visible: false, title: '' });
+
+  const showAlert = useCallback((
+    title: string,
+    message?: string,
+    buttons?: ThemedAlertButton[]
+  ) => {
+    setAlertConfig({ visible: true, title, message, buttons });
+  }, []);
+
+  const hideAlert = useCallback(() => {
+    setAlertConfig(prev => ({ ...prev, visible: false }));
+  }, []);
+
   // Check for saved session on mount
   useEffect(() => {
     getGameSession().then((session) => {
@@ -989,7 +1204,7 @@ export default function App() {
 
     socket.onerror = (error) => {
       console.log('WebSocket error:', error);
-      Alert.alert('Connection Error', 'Failed to connect to game server');
+      showAlert('Connection Error', 'Failed to connect to game server');
       setConnecting(false);
     };
 
@@ -1067,7 +1282,7 @@ export default function App() {
           break;
 
         case 'error':
-          Alert.alert('Error', payload.message);
+          showAlert('Error', payload.message);
           setConnecting(false);
           // If we got an error while trying to rejoin, clear the invalid session and disconnect
           setSavedSession((current) => {
@@ -1159,7 +1374,7 @@ export default function App() {
   }, []);
 
   const handleLeave = useCallback(() => {
-    Alert.alert('Leave', 'Are you sure you want to leave?', [
+    showAlert('Leave Game', 'Are you sure you want to leave?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Leave',
@@ -1198,6 +1413,7 @@ export default function App() {
           onDismissSavedSession={handleDismissSavedSession}
           connecting={connecting}
           savedSession={savedSession}
+          showAlert={showAlert}
         />
       )}
       {state.screen === 'lobby' && state.roomCode && (
@@ -1223,6 +1439,13 @@ export default function App() {
       {state.screen === 'game' && (
         <Toast key={toastKeyRef.current} message={toastMessage} />
       )}
+      <ThemedAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        buttons={alertConfig.buttons}
+        onDismiss={hideAlert}
+      />
     </SafeAreaView>
   );
 }
