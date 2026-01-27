@@ -721,7 +721,7 @@ function GameScreen({
     >
       {/* Turn indicator */}
       <LinearGradient
-        colors={['#1F3524', '#1A2E1F']}
+        colors={['#18261B', '#141F17']}
         style={styles.turnBar}
       >
         <View>
@@ -786,7 +786,7 @@ function GameScreen({
 
       {/* Hand */}
       <LinearGradient
-        colors={['#1F3524', '#1A2E1F']}
+        colors={['#18261B', '#141F17']}
         style={styles.handSection}
       >
         <HandGrid
@@ -1370,7 +1370,7 @@ const styles = StyleSheet.create({
   faceUpContainer: {
     flexDirection: 'column',
     gap: SPACING.sm,
-    backgroundColor: '#1A2E1F',
+    backgroundColor: '#141F17',
     padding: SPACING.md,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
@@ -1386,7 +1386,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1A2E1F',
+    backgroundColor: '#141F17',
     borderWidth: 1,
     borderColor: 'rgba(201, 162, 39, 0.35)',
     borderRadius: RADIUS.lg,
@@ -1431,7 +1431,7 @@ const styles = StyleSheet.create({
   },
   // Players panel
   playersPanel: {
-    backgroundColor: '#1A2E1F',
+    backgroundColor: '#141F17',
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: 'rgba(201, 162, 39, 0.35)',
