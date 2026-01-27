@@ -180,10 +180,14 @@ export function discardCards(
   state: GameState,
   playerId: string,
   cardIds: string[]
-): boolean {
+): { success: true; cards: Card[] } | { success: false; error: string } {
+  if (cardIds.length === 0) {
+    return { success: false, error: 'Must discard at least one card' };
+  }
+
   const player = state.players.find((p) => p.id === playerId);
   if (!player) {
-    return false;
+    return { success: false, error: 'Player not found' };
   }
 
   const cardsToDiscard: Card[] = [];
@@ -191,9 +195,19 @@ export function discardCards(
   for (const cardId of cardIds) {
     const cardIndex = player.hand.findIndex((c) => c.id === cardId);
     if (cardIndex === -1) {
-      return false; // Card not found in hand
+      return { success: false, error: 'Card not found in hand' };
     }
     cardsToDiscard.push(player.hand[cardIndex]);
+  }
+
+  // Validate: all non-locomotive cards must be the same color
+  const nonLocomotiveColors = cardsToDiscard
+    .filter((c) => c.color !== 'locomotive')
+    .map((c) => c.color);
+  const uniqueColors = new Set(nonLocomotiveColors);
+
+  if (uniqueColors.size > 1) {
+    return { success: false, error: 'Route cards must be the same color (locomotives are wild)' };
   }
 
   // Remove cards from hand and add to discard pile
@@ -205,7 +219,7 @@ export function discardCards(
     }
   }
 
-  return true;
+  return { success: true, cards: cardsToDiscard };
 }
 
 export function reshuffleDiscardIntoDeck(state: GameState): void {

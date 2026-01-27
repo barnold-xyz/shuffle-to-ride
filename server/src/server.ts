@@ -316,22 +316,35 @@ export default class ShuffleToRideServer implements Server {
     if (this.state.phase !== 'playing') return;
 
     const player = this.state.players.find((p) => p.id === conn.id);
-    const success = discardCards(this.state, conn.id, cardIds);
-
-    if (success && player) {
-      console.log(`${conn.id} discarded ${cardIds.length} cards`);
-
-      // Notify other players
-      this.broadcastPlayerAction(conn.id, {
-        type: 'discarded',
-        playerName: player.name,
-        count: cardIds.length,
-      });
-
-      this.broadcastGameState();
-    } else {
-      this.sendError(conn, 'Failed to discard cards');
+    if (!player) {
+      this.sendError(conn, 'Player not found');
+      return;
     }
+
+    const result = discardCards(this.state, conn.id, cardIds);
+
+    if (!result.success) {
+      this.sendError(conn, result.error);
+      return;
+    }
+
+    console.log(`${conn.id} discarded ${cardIds.length} cards`);
+
+    // Build color breakdown
+    const colorBreakdown: Record<string, number> = {};
+    for (const card of result.cards) {
+      colorBreakdown[card.color] = (colorBreakdown[card.color] || 0) + 1;
+    }
+
+    // Notify other players
+    this.broadcastPlayerAction(conn.id, {
+      type: 'discarded',
+      playerName: player.name,
+      count: cardIds.length,
+      colorBreakdown,
+    });
+
+    this.broadcastGameState();
   }
 
   private handleEndTurn(conn: Connection) {
@@ -409,6 +422,7 @@ export default class ShuffleToRideServer implements Server {
       playerName: string;
       cardColor?: string;
       count?: number;
+      colorBreakdown?: Record<string, number>;
     }
   ) {
     const message = JSON.stringify({ type: 'player-action', payload: action });
