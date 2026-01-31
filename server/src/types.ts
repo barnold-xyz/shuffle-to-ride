@@ -62,6 +62,10 @@ export interface DiscardCardsPayload {
   cardIds: string[];
 }
 
+export interface SetTurnOrderPayload {
+  playerIds: string[];
+}
+
 // Server -> Client events
 export interface RoomCreatedPayload {
   roomCode: string;
