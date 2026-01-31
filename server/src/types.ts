@@ -27,6 +27,7 @@ export interface CurrentTurn {
   playerId: string;
   cardsDrawn: number;
   drewLocomotive: boolean;
+  routesClaimed: number;
 }
 
 export interface GameState {
