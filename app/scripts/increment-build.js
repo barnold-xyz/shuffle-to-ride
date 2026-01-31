@@ -26,7 +26,8 @@ function incrementBuildNumbers() {
   }
 
   // Validate structure
-  if (!appJson?.expo?.ios?.buildNumber || !appJson?.expo?.android?.versionCode) {
+  if (typeof appJson?.expo?.ios?.buildNumber === 'undefined' ||
+      typeof appJson?.expo?.android?.versionCode === 'undefined') {
     console.error('❌ Error: app.json missing required build number fields');
     console.error('Expected: expo.ios.buildNumber and expo.android.versionCode');
     process.exit(1);
