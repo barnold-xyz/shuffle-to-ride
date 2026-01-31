@@ -10,6 +10,7 @@ import {
   RejoinRoomPayload,
   DrawFaceUpPayload,
   DiscardCardsPayload,
+  SetTurnOrderPayload,
 } from './types';
 import {
   createGameState,
@@ -35,6 +36,7 @@ type ClientMessage =
   | { type: 'draw-from-deck' }
   | { type: 'draw-face-up'; payload: DrawFaceUpPayload }
   | { type: 'discard-cards'; payload: DiscardCardsPayload }
+  | { type: 'set-turn-order'; payload: SetTurnOrderPayload }
   | { type: 'end-turn' };
 
 export default class ShuffleToRideServer implements Server {
@@ -110,6 +112,9 @@ export default class ShuffleToRideServer implements Server {
         break;
       case 'discard-cards':
         this.handleDiscardCards(conn, parsed.payload);
+        break;
+      case 'set-turn-order':
+        this.handleSetTurnOrder(conn, parsed.payload);
         break;
       case 'end-turn':
         this.handleEndTurn(conn);
@@ -424,6 +429,45 @@ export default class ShuffleToRideServer implements Server {
     }
 
     this.broadcastGameState();
+  }
+
+  private handleSetTurnOrder(conn: Connection, payload: SetTurnOrderPayload) {
+    const { playerIds } = payload;
+
+    // Verify sender is host
+    const sender = this.state.players.find((p) => p.id === conn.id);
+    if (!sender?.isHost) {
+      this.sendError(conn, 'Only the host can set turn order');
+      return;
+    }
+
+    // Verify game is in lobby
+    if (this.state.phase !== 'lobby') {
+      this.sendError(conn, 'Cannot change turn order after game starts');
+      return;
+    }
+
+    // Verify all IDs are valid
+    if (playerIds.length !== this.state.players.length) {
+      this.sendError(conn, 'Invalid player list');
+      return;
+    }
+
+    const playerMap = new Map(this.state.players.map((p) => [p.id, p]));
+    const reordered = playerIds.map((id) => playerMap.get(id)).filter(Boolean);
+
+    if (reordered.length !== this.state.players.length) {
+      this.sendError(conn, 'Invalid player IDs');
+      return;
+    }
+
+    // Reorder players
+    this.state.players = reordered as typeof this.state.players;
+
+    console.log(`Turn order updated by host in room ${this.room.id}`);
+
+    // Broadcast updated player list
+    this.broadcastPlayerList();
   }
 
   private handleEndTurn(conn: Connection) {

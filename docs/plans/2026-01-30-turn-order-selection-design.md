@@ -2,11 +2,11 @@
 
 ## Overview
 
-Allow the host to set the turn order by dragging players in the lobby. The order can be changed anytime before the game starts, then locks once gameplay begins.
+Allow the host to set the turn order using up/down arrows in the lobby. The order can be changed anytime before the game starts, then locks once gameplay begins.
 
 ## Design Decisions
 
-- **Draggable list** using `react-native-draggable-flatlist`
+- **Up/down arrows** - Simple approach that works with Expo Go (no native dependencies)
 - **Host only** can reorder; non-host players see the order but can't change it
 - **Lobby only** - order is locked once game starts
 - **Reuses existing data** - `state.players` array order already determines turn order
@@ -84,28 +84,7 @@ private handleSetTurnOrder(conn: Connection, payload: SetTurnOrderPayload) {
 
 ## Client Changes
 
-### Dependencies
-
-```bash
-npx expo install react-native-draggable-flatlist react-native-reanimated react-native-gesture-handler
-```
-
-Requires full rebuild (native modules).
-
 ### App.tsx
-
-**Root wrapper:**
-
-Wrap the app content in `GestureHandlerRootView`:
-
-```typescript
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-// In render:
-<GestureHandlerRootView style={{ flex: 1 }}>
-  {/* existing app content */}
-</GestureHandlerRootView>
-```
 
 **New handler:**
 
@@ -120,37 +99,29 @@ const handleSetTurnOrder = useCallback((playerIds: string[]) => {
 
 **LobbyScreen props:**
 
-Add `onSetTurnOrder` and `isHost` props.
+Add `onSetTurnOrder` prop.
 
 ### LobbyScreen Component
 
-**Host view - Draggable list:**
+**Move player function:**
 
 ```typescript
-import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+const movePlayer = (index: number, direction: 'up' | 'down') => {
+  const newIndex = direction === 'up' ? index - 1 : index + 1;
+  if (newIndex < 0 || newIndex >= players.length) return;
 
-// For host:
-<DraggableFlatList
-  data={players}
-  keyExtractor={(item) => item.id}
-  onDragEnd={({ data }) => {
-    onSetTurnOrder(data.map((p) => p.id));
-  }}
-  renderItem={({ item, drag, isActive, getIndex }) => (
-    <PlayerRow
-      player={item}
-      position={(getIndex() ?? 0) + 1}
-      isActive={isActive}
-      onDrag={drag}
-      showDragHandle={true}
-    />
-  )}
-/>
+  const newOrder = [...players];
+  [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+  onSetTurnOrder(newOrder.map((p) => p.id));
+};
 ```
 
-**Non-host view:**
+**Player row with arrows (host only):**
 
-Regular FlatList with position numbers, no drag handles.
+Each player row shows:
+- Position number in brass circle (1, 2, 3...)
+- Player name and badges
+- Up/down arrow buttons (host only, when 2+ players)
 
 ## Styling (Railroad Heritage)
 
@@ -158,28 +129,27 @@ Following project design principles:
 
 | Element | Style |
 |---------|-------|
-| Drag handle icon (≡) | `color: THEME.brass` |
-| Position number circle | `backgroundColor: THEME.brass`, `color: THEME.cream` |
+| Position number circle | `backgroundColor: THEME.brass`, `color: THEME.textInverse` |
+| Arrow buttons (▲▼) | `color: THEME.brass` |
+| Disabled arrows | `opacity: 0.3`, `color: THEME.textMuted` |
 | Section label | `color: THEME.brass`, `...TYPE.label` |
-| Active drag row | `borderColor: 'rgba(201, 162, 39, 0.4)'`, subtle elevation |
 | Player rows | Existing burgundy tint container style |
 
-**Labels:**
-- Host sees: "Drag to set turn order"
-- Non-host sees: "Turn order"
+**Label:**
+- Host sees: "Tap arrows to set turn order" (only when 2+ players)
 
-## Files to Modify
+## Files Modified
 
 1. `server/src/types.ts` - Add `SetTurnOrderPayload`
 2. `server/src/server.ts` - Add `handleSetTurnOrder`
-3. `app/package.json` - Add draggable-flatlist dependencies
-4. `app/App.tsx` - GestureHandlerRootView wrapper, handler, LobbyScreen updates
+3. `app/App.tsx` - Handler and LobbyScreen updates with arrow UI
 
 ## Testing
 
-1. Create room with 3+ players
-2. Verify host sees drag handles, others don't
-3. Drag to reorder - verify all clients see updated order
-4. Start game - verify turn order matches the set order
-5. Verify non-host cannot trigger reorder (server rejects)
-6. Verify reorder rejected after game starts
+1. Create room with 2+ players
+2. Verify host sees arrow buttons, others don't
+3. Tap arrows to reorder - verify all clients see updated order
+4. Verify arrows disabled at list boundaries (can't move first player up)
+5. Start game - verify turn order matches the set order
+6. Verify non-host cannot trigger reorder (server rejects)
+7. Verify reorder rejected after game starts

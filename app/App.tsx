@@ -805,6 +805,7 @@ function LobbyScreen({
   playerName,
   onStartGame,
   onLeave,
+  onSetTurnOrder,
 }: {
   roomCode: string;
   players: PublicPlayer[];
@@ -812,7 +813,17 @@ function LobbyScreen({
   playerName: string;
   onStartGame: () => void;
   onLeave: () => void;
+  onSetTurnOrder: (playerIds: string[]) => void;
 }) {
+  const movePlayer = (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= players.length) return;
+
+    const newOrder = [...players];
+    [newOrder[index], newOrder[newIndex]] = [newOrder[newIndex], newOrder[index]];
+    onSetTurnOrder(newOrder.map((p) => p.id));
+  };
+
   return (
     <LinearGradient
       colors={[THEME.bgMid, THEME.bgDark]}
@@ -828,20 +839,48 @@ function LobbyScreen({
 
       <View style={styles.lobbyContent}>
         <Text style={styles.sectionTitle}>Passengers ({players.length}/5)</Text>
+        {isHost && players.length > 1 && (
+          <Text style={styles.turnOrderLabel}>Tap arrows to set turn order</Text>
+        )}
         <View style={styles.playerList}>
-          {players.map((player) => (
+          {players.map((player, index) => (
             <View key={player.id} style={styles.playerRow}>
-              <View style={styles.playerNameContainer}>
-                <Text style={styles.playerName}>{player.name}</Text>
-                {player.isHost && (
-                  <View style={styles.hostBadge}>
-                    <Text style={styles.hostBadgeText}>HOST</Text>
+              <View style={styles.playerRowLeft}>
+                <View style={styles.positionBadge}>
+                  <Text style={styles.positionText}>{index + 1}</Text>
+                </View>
+                <View style={styles.playerNameContainer}>
+                  <Text style={styles.playerName}>{player.name}</Text>
+                  {player.isHost && (
+                    <View style={styles.hostBadge}>
+                      <Text style={styles.hostBadgeText}>HOST</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+              <View style={styles.playerRowRight}>
+                {player.name === playerName && (
+                  <Text style={styles.youLabel}>You</Text>
+                )}
+                {isHost && players.length > 1 && (
+                  <View style={styles.arrowButtons}>
+                    <TouchableOpacity
+                      onPress={() => movePlayer(index, 'up')}
+                      disabled={index === 0}
+                      style={[styles.arrowButton, index === 0 && styles.arrowButtonDisabled]}
+                    >
+                      <Text style={[styles.arrowText, index === 0 && styles.arrowTextDisabled]}>▲</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => movePlayer(index, 'down')}
+                      disabled={index === players.length - 1}
+                      style={[styles.arrowButton, index === players.length - 1 && styles.arrowButtonDisabled]}
+                    >
+                      <Text style={[styles.arrowText, index === players.length - 1 && styles.arrowTextDisabled]}>▼</Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
-              {player.name === playerName && (
-                <Text style={styles.youLabel}>You</Text>
-              )}
             </View>
           ))}
         </View>
@@ -1394,6 +1433,13 @@ export default function App() {
     socketRef.current?.send(JSON.stringify({ type: 'end-turn' }));
   }, []);
 
+  const handleSetTurnOrder = useCallback((playerIds: string[]) => {
+    socketRef.current?.send(JSON.stringify({
+      type: 'set-turn-order',
+      payload: { playerIds }
+    }));
+  }, []);
+
   const handleLeave = useCallback(() => {
     showAlert('Leave Game', 'Are you sure you want to leave?', [
       { text: 'Cancel', style: 'cancel' },
@@ -1426,7 +1472,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={THEME.bgDark} />
-      {state.screen === 'home' && (
+        {state.screen === 'home' && (
         <HomeScreen
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
@@ -1445,6 +1491,7 @@ export default function App() {
           playerName={state.playerName}
           onStartGame={handleStartGame}
           onLeave={handleLeave}
+          onSetTurnOrder={handleSetTurnOrder}
         />
       )}
       {state.screen === 'game' && (
@@ -1666,6 +1713,56 @@ const styles = StyleSheet.create({
     ...TYPE.bodyS,
     color: THEME.textMuted,
     fontStyle: 'italic',
+  },
+  turnOrderLabel: {
+    ...TYPE.label,
+    color: THEME.brass,
+    marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  playerRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  playerRowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  positionBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: THEME.brass,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  positionText: {
+    ...TYPE.bodyS,
+    fontWeight: '700',
+    color: THEME.textInverse,
+  },
+  arrowButtons: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
+  },
+  arrowButton: {
+    width: 28,
+    height: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  arrowButtonDisabled: {
+    opacity: 0.3,
+  },
+  arrowText: {
+    fontSize: 16,
+    color: THEME.brass,
+  },
+  arrowTextDisabled: {
+    color: THEME.textMuted,
   },
   waitingContainer: {
     alignItems: 'center',
