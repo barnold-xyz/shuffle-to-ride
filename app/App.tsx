@@ -1746,9 +1746,9 @@ const styles = StyleSheet.create({
   },
   faceUpContainer: {
     flexDirection: 'column',
-    gap: 4,
+    gap: 2,
     backgroundColor: 'rgba(107, 28, 35, 0.25)',
-    padding: SPACING.xs,
+    padding: 4,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: 'rgba(201, 162, 39, 0.4)',
@@ -1906,7 +1906,7 @@ const styles = StyleSheet.create({
     ...TYPE.bodyS,
     fontWeight: '700',
     color: THEME.textPrimary,
-    marginTop: SPACING.xs,
+    marginTop: 2,
   },
   handGridCountSelected: {
     color: THEME.brass,
