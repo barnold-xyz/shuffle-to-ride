@@ -6,7 +6,11 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "increment-build": "node scripts/increment-build.js",
+    "build:android": "npm run increment-build && npx eas-cli build --platform android --profile preview",
+    "build:ios": "npm run increment-build && npx eas-cli build --platform ios --profile production",
+    "build:both": "npm run increment-build && npx eas-cli build --platform all --profile production"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.1.2",
