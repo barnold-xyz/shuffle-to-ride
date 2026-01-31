@@ -973,7 +973,6 @@ function GameScreen({
 
       <ScrollView style={styles.gameScroll}>
         {/* Draw area: Face-up cards on left, deck and players stacked on right */}
-        <Text style={styles.sectionLabel}>Draw Cards</Text>
         <View style={styles.drawArea}>
           <FaceUpDisplay
             cards={state.faceUpCards}
