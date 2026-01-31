@@ -1746,9 +1746,9 @@ const styles = StyleSheet.create({
   },
   faceUpContainer: {
     flexDirection: 'column',
-    gap: 2,
+    gap: 0,
     backgroundColor: 'rgba(107, 28, 35, 0.25)',
-    padding: 4,
+    padding: 2,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: 'rgba(201, 162, 39, 0.4)',
