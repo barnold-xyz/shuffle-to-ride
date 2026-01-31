@@ -85,6 +85,8 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 - Draw 2 cards per turn (from deck or face-up)
 - Face-up locomotive counts as both draws (turn ends immediately)
 - If 3+ locomotives appear face-up, discard all 5 and redraw
+- **Turn action exclusivity**: Draw cards OR claim route per turn (not both)
+- Claiming a route immediately ends the turn
 - Discard cards to claim routes (tracking done physically on board)
 
 ## Message Types
@@ -93,6 +95,7 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 |-----------------|-------------|
 | `join-room` | Player joins with name (first player becomes host) |
 | `rejoin-room` | Player reconnects using saved token |
+| `set-turn-order` | Host sets player turn order in lobby (before game starts) |
 | `start-game` | Host starts, deals cards |
 | `draw-from-deck` | Draw blind from deck |
 | `draw-face-up` | Draw specific face-up card |
@@ -114,7 +117,11 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 
 - The app uses simple state-based navigation (no expo-router) due to SDK 54 compatibility issues
 - Cards display in landscape orientation (100x70px normal, 70x50px small)
-- Toast notifications show other players' actions with privacy rules (deck draws don't reveal color)
+- Toast notifications show other players' actions with privacy rules:
+  - Deck draws don't reveal color
+  - Route claims show color breakdown (e.g., "3 red, 1 locomotive")
+  - Tiered durations: 3s for draws, 5s for turn start, 8s for route claims
+- Route claim validation enforces same-color requirement (locomotives are wild)
 - Server broadcasts game state after every action to keep all clients in sync
 - Room codes are generated client-side and become the PartyKit party ID
 - Set `USE_LOCAL_SERVER = true` in `app/src/config.ts` to test against localhost instead of prod
