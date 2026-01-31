@@ -370,6 +370,12 @@ export default class ShuffleToRideServer implements Server {
 
     if (this.state.phase !== 'playing') return;
 
+    // Validate turn action exclusivity - cannot claim route after drawing cards
+    if (this.state.currentTurn?.cardsDrawn && this.state.currentTurn.cardsDrawn > 0) {
+      this.sendError(conn, 'You cannot claim a route after drawing cards');
+      return;
+    }
+
     const player = this.state.players.find((p) => p.id === conn.id);
     if (!player) {
       this.sendError(conn, 'Player not found');
