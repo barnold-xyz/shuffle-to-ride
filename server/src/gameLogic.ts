@@ -260,6 +260,7 @@ export function startTurn(state: GameState, playerId: string): void {
     playerId,
     cardsDrawn: 0,
     drewLocomotive: false,
+    routesClaimed: 0,
   };
 }
 
