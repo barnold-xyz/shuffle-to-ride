@@ -1735,17 +1735,17 @@ const styles = StyleSheet.create({
   drawArea: {
     flexDirection: 'row',
     marginBottom: SPACING.xl,
-    gap: SPACING.md,
+    gap: SPACING.lg,
   },
   deckAndPlayersColumn: {
     flex: 1,
-    gap: SPACING.md,
+    gap: SPACING.lg,
   },
   faceUpContainer: {
     flexDirection: 'column',
-    gap: SPACING.sm,
+    gap: SPACING.xs,
     backgroundColor: 'rgba(107, 28, 35, 0.25)',
-    padding: SPACING.md,
+    padding: SPACING.sm,
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: 'rgba(201, 162, 39, 0.4)',
