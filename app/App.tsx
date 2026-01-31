@@ -952,23 +952,22 @@ function GameScreen({
         colors={[THEME.bgElevated, THEME.bgMid]}
         style={styles.turnBar}
       >
-        <View>
-          <Text style={styles.turnText}>
-            {isMyTurn ? 'Your Turn' : `${currentPlayerName}'s Turn`}
-          </Text>
+        <Text style={styles.turnText}>
+          {isMyTurn ? 'Your Turn' : `${currentPlayerName}'s Turn`}
+        </Text>
+        <View style={styles.turnRight}>
           {isMyTurn && (
             <Text style={styles.drawCount}>
-              Drawn: {cardsDrawn}/2
-              {state.currentTurn?.drewLocomotive && ' (locomotive)'}
+              {cardsDrawn}/2{state.currentTurn?.drewLocomotive && ' (loco)'}
             </Text>
           )}
+          {isMyTurn && (
+            <View style={styles.turnIndicator}>
+              <View style={[styles.turnDot, styles.turnDotActive]} />
+              <View style={[styles.turnDot, cardsDrawn >= 1 && styles.turnDotActive]} />
+            </View>
+          )}
         </View>
-        {isMyTurn && (
-          <View style={styles.turnIndicator}>
-            <View style={[styles.turnDot, styles.turnDotActive]} />
-            <View style={[styles.turnDot, cardsDrawn >= 1 && styles.turnDotActive]} />
-          </View>
-        )}
       </LinearGradient>
 
       <ScrollView style={styles.gameScroll}>
@@ -1698,10 +1697,14 @@ const styles = StyleSheet.create({
     ...TYPE.bodyL,
     color: THEME.textPrimary,
   },
+  turnRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
   drawCount: {
     ...TYPE.caption,
     color: THEME.textSecondary,
-    marginTop: 2,
   },
   turnIndicator: {
     flexDirection: 'row',
