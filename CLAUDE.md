@@ -50,16 +50,22 @@ npx eas-cli update --branch production --message "Description"   # iOS
 
 ### Full Rebuild (native changes)
 Required when changing `package.json`, `app.json`, native dependencies, or Expo SDK:
+
 ```bash
 cd app
 npx expo install --check                                         # Fix dependency mismatches
 npx expo-doctor                                                  # Check for common issues
-# Bump "version" in app.json for production releases
-# Bump "ios.buildNumber" in app.json for each iOS submission
-npx eas-cli build --profile preview --platform android           # Android APK
-npx eas-cli build --profile production --platform ios            # iOS
+
+# Use automated build scripts (auto-increments build numbers)
+npm run build:android      # Android APK (increments versionCode)
+npm run build:ios          # iOS (increments buildNumber)
+
 npx eas-cli submit --platform ios                                # Submit to TestFlight
 ```
+
+**Build numbers:** Auto-incremented by `scripts/increment-build.js`. After a successful EAS build, commit the updated `app.json` to track which build number was deployed. If the build fails, you may want to revert the increment.
+
+**Version bumping:** Manually bump `version` in `app.json` for user-facing releases (e.g., "1.0.0" → "1.1.0").
 
 **Rule of thumb:** Changed only `.ts`/`.tsx` files? Use OTA. Changed `package.json` or `app.json`? Rebuild.
 
@@ -85,6 +91,8 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 - Draw 2 cards per turn (from deck or face-up)
 - Face-up locomotive counts as both draws (turn ends immediately)
 - If 3+ locomotives appear face-up, discard all 5 and redraw
+- **Turn action exclusivity**: Draw cards OR claim route per turn (not both)
+- Claiming a route immediately ends the turn
 - Discard cards to claim routes (tracking done physically on board)
 
 ## Message Types
@@ -93,6 +101,7 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 |-----------------|-------------|
 | `join-room` | Player joins with name (first player becomes host) |
 | `rejoin-room` | Player reconnects using saved token |
+| `set-turn-order` | Host sets player turn order in lobby (before game starts) |
 | `start-game` | Host starts, deals cards |
 | `draw-from-deck` | Draw blind from deck |
 | `draw-face-up` | Draw specific face-up card |
@@ -114,7 +123,11 @@ npx eas-cli submit --platform ios                                # Submit to Tes
 
 - The app uses simple state-based navigation (no expo-router) due to SDK 54 compatibility issues
 - Cards display in landscape orientation (100x70px normal, 70x50px small)
-- Toast notifications show other players' actions with privacy rules (deck draws don't reveal color)
+- Toast notifications show other players' actions with privacy rules:
+  - Deck draws don't reveal color
+  - Route claims show color breakdown (e.g., "3 red, 1 locomotive")
+  - Tiered durations: 3s for draws, 5s for turn start, 8s for route claims
+- Route claim validation enforces same-color requirement (locomotives are wild)
 - Server broadcasts game state after every action to keep all clients in sync
 - Room codes are generated client-side and become the PartyKit party ID
 - Set `USE_LOCAL_SERVER = true` in `app/src/config.ts` to test against localhost instead of prod
