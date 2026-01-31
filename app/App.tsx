@@ -972,7 +972,7 @@ function GameScreen({
       </LinearGradient>
 
       <ScrollView style={styles.gameScroll}>
-        {/* Draw area: Face-up cards on left, deck on right */}
+        {/* Draw area: Face-up cards on left, deck and players stacked on right */}
         <Text style={styles.sectionLabel}>Draw Cards</Text>
         <View style={styles.drawArea}>
           <FaceUpDisplay
@@ -981,43 +981,44 @@ function GameScreen({
             canDraw={canDraw}
             canDrawLocomotive={canDrawLocomotive}
           />
-          <DrawDeck
-            deckCount={state.deckCount}
-            onPress={onDrawDeck}
-            disabled={!canDraw}
-          />
-        </View>
-
-        {/* Players info */}
-        <View style={styles.playersPanel}>
-          <Text style={styles.sectionLabel}>Passengers</Text>
-          {state.players.map((player) => (
-            <View
-              key={player.id}
-              style={[
-                styles.playerInfoRow,
-                player.id === state.currentTurn?.playerId &&
-                  styles.playerInfoActive,
-                player.connected === false && styles.playerInfoDisconnected,
-              ]}
-            >
-              <View style={styles.playerInfoLeft}>
-                {player.id === state.currentTurn?.playerId && (
-                  <View style={styles.activePlayerDot} />
-                )}
-                <Text style={[
-                  styles.playerInfoName,
-                  player.connected === false && styles.playerInfoNameDisconnected,
-                ]}>
-                  {player.name}
-                </Text>
-                {player.connected === false && (
-                  <Text style={styles.disconnectedBadge}>OFFLINE</Text>
-                )}
-              </View>
-              <Text style={styles.playerInfoCards}>{player.cardCount}</Text>
+          <View style={styles.deckAndPlayersColumn}>
+            <DrawDeck
+              deckCount={state.deckCount}
+              onPress={onDrawDeck}
+              disabled={!canDraw}
+            />
+            {/* Players info */}
+            <View style={styles.playersPanel}>
+              <Text style={styles.sectionLabel}>Passengers</Text>
+              {state.players.map((player) => (
+                <View
+                  key={player.id}
+                  style={[
+                    styles.playerInfoRow,
+                    player.id === state.currentTurn?.playerId &&
+                      styles.playerInfoActive,
+                    player.connected === false && styles.playerInfoDisconnected,
+                  ]}
+                >
+                  <View style={styles.playerInfoLeft}>
+                    {player.id === state.currentTurn?.playerId && (
+                      <View style={styles.activePlayerDot} />
+                    )}
+                    <Text style={[
+                      styles.playerInfoName,
+                      player.connected === false && styles.playerInfoNameDisconnected,
+                    ]}>
+                      {player.name}
+                    </Text>
+                    {player.connected === false && (
+                      <Text style={styles.disconnectedBadge}>OFFLINE</Text>
+                    )}
+                  </View>
+                  <Text style={styles.playerInfoCards}>{player.cardCount}</Text>
+                </View>
+              ))}
             </View>
-          ))}
+          </View>
         </View>
       </ScrollView>
 
@@ -1727,14 +1728,18 @@ const styles = StyleSheet.create({
     ...TYPE.caption,
     fontWeight: '600',
     color: THEME.brass,
-    marginBottom: SPACING.sm,
+    marginBottom: SPACING.xs,
     letterSpacing: 1,
     textTransform: 'uppercase',
   },
   drawArea: {
     flexDirection: 'row',
     marginBottom: SPACING.xl,
-    gap: SPACING.lg,
+    gap: SPACING.md,
+  },
+  deckAndPlayersColumn: {
+    flex: 1,
+    gap: SPACING.md,
   },
   faceUpContainer: {
     flexDirection: 'column',
@@ -1759,7 +1764,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(201, 162, 39, 0.4)',
     borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
+    padding: SPACING.sm,
+    paddingVertical: SPACING.md,
   },
   deckDisabled: {
     opacity: 0.5,
@@ -1804,15 +1810,15 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     borderWidth: 1,
     borderColor: 'rgba(201, 162, 39, 0.3)',
-    padding: SPACING.md,
-    marginBottom: SPACING.lg,
+    padding: SPACING.sm,
+    paddingTop: SPACING.xs,
   },
   playerInfoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.sm,
     borderRadius: RADIUS.md,
     marginTop: SPACING.xs,
   },
