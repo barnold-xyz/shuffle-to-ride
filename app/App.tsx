@@ -1210,6 +1210,8 @@ export default function App() {
     };
 
     socket.onclose = (event) => {
+      // Ignore close events from stale sockets (we've already moved to a new connection)
+      if (socketRef.current !== socket) return;
       console.log('Disconnected', event.code, event.reason);
       setState((s) => ({
         ...s,
@@ -1220,8 +1222,9 @@ export default function App() {
       setConnecting(false);
     };
 
-    socket.onerror = (error) => {
-      console.log('WebSocket error:', error);
+    socket.onerror = () => {
+      // Ignore error events from stale sockets (we've already moved to a new connection)
+      if (socketRef.current !== socket) return;
       showAlert('Connection Error', 'Failed to connect to game server');
       setConnecting(false);
     };

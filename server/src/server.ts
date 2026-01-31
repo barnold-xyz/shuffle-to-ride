@@ -163,10 +163,10 @@ export default class ShuffleToRideServer implements Server {
       return;
     }
 
-    if (player.connected) {
-      this.sendError(conn, 'Player is already connected');
-      return;
-    }
+    // Note: We don't check player.connected here because WebSocket/TCP
+    // doesn't detect abrupt disconnects immediately (app close, airplane mode).
+    // The onClose handler may never fire, leaving the player marked as connected.
+    // If they have a valid token, just let them reconnect - the old connection is stale.
 
     // Update player's connection ID and mark as connected
     const oldId = player.id;
