@@ -1858,7 +1858,7 @@ const styles = StyleSheet.create({
   },
   // Hand section
   handSection: {
-    padding: SPACING.lg,
+    padding: SPACING.sm,
     borderTopWidth: 1,
     borderTopColor: 'rgba(201, 162, 39, 0.4)',
   },
@@ -1871,7 +1871,7 @@ const styles = StyleSheet.create({
   handGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: SPACING.md,
+    gap: SPACING.sm,
   },
   handGridItem: {
     alignItems: 'center',
