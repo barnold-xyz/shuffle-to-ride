@@ -1906,7 +1906,7 @@ const styles = StyleSheet.create({
     ...TYPE.bodyS,
     fontWeight: '700',
     color: THEME.textPrimary,
-    marginTop: 2,
+    marginTop: 0,
   },
   handGridCountSelected: {
     color: THEME.brass,
