@@ -1734,12 +1734,13 @@ const styles = StyleSheet.create({
   },
   drawArea: {
     flexDirection: 'row',
+    alignItems: 'stretch',
     marginBottom: SPACING.xl,
     gap: SPACING.lg,
   },
   deckAndPlayersColumn: {
     flex: 1,
-    gap: SPACING.lg,
+    gap: SPACING.sm,
   },
   faceUpContainer: {
     flexDirection: 'column',
@@ -1757,7 +1758,6 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   deckContainer: {
-    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(107, 28, 35, 0.25)',
@@ -1765,7 +1765,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(201, 162, 39, 0.4)',
     borderRadius: RADIUS.lg,
     padding: SPACING.sm,
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.sm,
   },
   deckDisabled: {
     opacity: 0.5,
@@ -1806,6 +1806,7 @@ const styles = StyleSheet.create({
   },
   // Players panel
   playersPanel: {
+    flex: 1,
     backgroundColor: 'rgba(107, 28, 35, 0.2)',
     borderRadius: RADIUS.lg,
     borderWidth: 1,
