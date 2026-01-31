@@ -405,6 +405,24 @@ export default class ShuffleToRideServer implements Server {
       colorBreakdown,
     });
 
+    // Track route claim
+    if (this.state.currentTurn) {
+      this.state.currentTurn.routesClaimed = 1;
+    }
+
+    // Auto-end turn after claiming a route
+    const nextPlayerId = getNextPlayer(this.state);
+    if (nextPlayerId) {
+      const nextPlayer = this.state.players.find((p) => p.id === nextPlayerId);
+      startTurn(this.state, nextPlayerId);
+      if (nextPlayer) {
+        this.broadcastPlayerAction(nextPlayerId, {
+          type: 'turn-started',
+          playerName: nextPlayer.name,
+        });
+      }
+    }
+
     this.broadcastGameState();
   }
 
