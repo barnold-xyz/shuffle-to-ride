@@ -50,18 +50,24 @@ npx eas-cli update --branch production --message "Description"   # iOS
 
 ### Full Rebuild (native changes)
 Required when changing `package.json`, `app.json`, native dependencies, or Expo SDK:
+
+**BEFORE building:**
+1. Increment `ios.buildNumber` in `app.json` (required for every iOS build to avoid wasting free builds)
+2. Increment `android.versionCode` in `app.json` (required for every Android build)
+3. Bump `version` only for user-facing releases (e.g., "1.0.0" → "1.1.0")
+
 ```bash
 cd app
 npx expo install --check                                         # Fix dependency mismatches
 npx expo-doctor                                                  # Check for common issues
-# Bump "version" in app.json for production releases
-# Bump "ios.buildNumber" in app.json for each iOS submission
 npx eas-cli build --profile preview --platform android           # Android APK
 npx eas-cli build --profile production --platform ios            # iOS
 npx eas-cli submit --platform ios                                # Submit to TestFlight
 ```
 
 **Rule of thumb:** Changed only `.ts`/`.tsx` files? Use OTA. Changed `package.json` or `app.json`? Rebuild.
+
+**Build number rule:** Increment build numbers BEFORE every build, not after. EAS rejects duplicate build numbers, forcing you to rebuild and waste free builds.
 
 ## Key Files
 
