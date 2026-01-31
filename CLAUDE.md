@@ -63,7 +63,7 @@ npm run build:ios          # iOS (increments buildNumber)
 npx eas-cli submit --platform ios                                # Submit to TestFlight
 ```
 
-**Build numbers:** Automatically incremented by build scripts. Commit `app.json` after successful builds.
+**Build numbers:** Auto-incremented by `scripts/increment-build.js`. After a successful EAS build, commit the updated `app.json` to track which build number was deployed. If the build fails, you may want to revert the increment.
 
 **Version bumping:** Manually bump `version` in `app.json` for user-facing releases (e.g., "1.0.0" → "1.1.0").
 
