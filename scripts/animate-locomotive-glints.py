@@ -27,37 +27,37 @@ def draw_glint(draw, cx, cy, size, brightness):
     alpha = int(255 * brightness)
 
     # Outer glow -- thick fading lines
-    glow_size = int(size * 1.5)
+    glow_size = int(size * 1.8)
     for t in np.linspace(0, 1, max(glow_size, 4)):
         d = int(glow_size * t)
-        a = int(alpha * 0.35 * (1 - t))
-        w = max(1, int(3 * (1 - t)))  # Thicker near center
+        a = int(alpha * 0.5 * (1 - t))
+        w = max(1, int(5 * (1 - t)))  # Thicker near center
         c = (255, 230, 180, a)
         draw.line((cx - d, cy, cx + d, cy), fill=c, width=w)
         draw.line((cx, cy - d, cx, cy + d), fill=c, width=w)
 
     # Bright core arms -- solid lines that taper
-    core_size = max(int(size * 0.7), 2)
+    core_size = max(int(size * 0.8), 2)
     for t in np.linspace(0, 1, max(core_size, 3)):
         d = int(core_size * t)
-        a = int(alpha * (1 - t * 0.4))
-        w = max(1, int(2 * (1 - t)))
+        a = int(alpha * (1 - t * 0.3))
+        w = max(1, int(4 * (1 - t)))
         c = (255, 248, 220, a)
         draw.line((cx - d, cy, cx + d, cy), fill=c, width=w)
         draw.line((cx, cy - d, cx, cy + d), fill=c, width=w)
 
     # Bright center dot
-    r = max(2, int(size * 0.15))
+    r = max(3, int(size * 0.2))
     draw.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(255, 250, 230, alpha))
 
     # Diagonal arms (shorter, fainter)
-    diag_size = max(int(size * 0.5), 2)
+    diag_size = max(int(size * 0.55), 2)
     for t in np.linspace(0, 1, max(diag_size, 3)):
         d = int(diag_size * t)
-        a = int(alpha * 0.5 * (1 - t))
+        a = int(alpha * 0.6 * (1 - t))
         c = (255, 248, 220, a)
-        draw.line((cx - d, cy - d, cx + d, cy + d), fill=c, width=1)
-        draw.line((cx + d, cy - d, cx - d, cy + d), fill=c, width=1)
+        draw.line((cx - d, cy - d, cx + d, cy + d), fill=c, width=2)
+        draw.line((cx + d, cy - d, cx - d, cy + d), fill=c, width=2)
 
 
 class Glint:
@@ -137,8 +137,8 @@ def main():
 
     # Schedule glints across the animation
     # Each glint lasts ~8-15 frames, stagger starts so ~num_active_glints are visible at once
-    glint_duration_range = (10, 18)
-    glint_size_range = (12, 25)
+    glint_duration_range = (12, 20)
+    glint_size_range = (35, 60)
 
     glints = []
     spacing = max(1, num_frames // (num_active_glints * 3))

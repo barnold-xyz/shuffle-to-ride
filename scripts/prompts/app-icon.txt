@@ -1,0 +1,16 @@
+Create an image. Draw a front-facing steam locomotive as an app icon.
+
+The locomotive is coming straight toward the viewer, centered in the frame. We see the front of the boiler, the round headlight glowing warm gold, the cowcatcher at the bottom, and the smokestack on top. The locomotive should be rendered in the same vintage 1920s railroad poster style as the attached reference image -- bold flat color planes, strong geometric shapes, minimal shading, like a screen-printed poster with 4-5 colors.
+
+The locomotive body uses warm muted tones -- dark iron, burgundy, brass highlights. The headlight is the brightest element, glowing warm gold/brass. The overall color palette is: dark burgundy (#6B1C23), brass/gold (#C9A227), dark iron (#2C2C2C), warm cream (#D4C5B0), and dark wood brown (#2D2622).
+
+The background is a solid dark wood-brown (#2D2622) with subtle art deco geometric framing elements -- thin brass-colored lines forming a simple geometric border or radiating lines behind the locomotive, like a 1920s railroad company emblem.
+
+Composition: The locomotive fills most of the frame (about 70-80% of the canvas), centered both horizontally and vertically. Leave enough margin that Android's circular icon mask won't crop critical parts (keep important content in the center 66% of the canvas).
+
+The image must be a square (1:1 aspect ratio). The background must be opaque (not transparent) -- this will be used directly as a mobile app icon.
+
+Style: Vintage railroad poster art, bold graphic shapes, limited color palette, art deco influence. NOT cartoony, NOT photorealistic, NOT soft digital painting. Think 1920s travel poster by Cassandre.
+
+No text, no words, no lettering anywhere in the image.
+No smoke or steam coming from the locomotive.

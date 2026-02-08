@@ -1,0 +1,6 @@
+The style and mood are perfect -- keep the exact same art deco aesthetic, color palette, and composition concept. But two issues:
+
+1. The image MUST be perfectly square (1:1 aspect ratio). Same width and height.
+2. The locomotive needs to be MUCH larger -- it should fill about 80% of the canvas. This will be an app icon displayed as small as 29x29 pixels, so the locomotive needs to be the dominant element with minimal empty space around it. The art deco rays and framing should be tight around the locomotive, not spread across a wide background.
+
+Keep everything else the same: front-facing locomotive, dark wood background, art deco brass rays, glowing headlight, burgundy body, no text, no smoke.

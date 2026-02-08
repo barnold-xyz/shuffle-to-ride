@@ -51,21 +51,28 @@ async function main() {
   // Build request parts
   const parts = [];
 
-  // If we have a reference image for iteration, include it first
-  if (args.reference && feedback) {
-    const imgPath = path.resolve(args.reference);
-    if (!fs.existsSync(imgPath)) {
-      console.error(`Reference image not found: ${imgPath}`);
-      process.exit(1);
+  // Include reference image(s) for style/iteration context
+  // Supports comma-separated paths: --reference img1.png,img2.png
+  if (args.reference) {
+    const refs = args.reference.split(',');
+    for (const ref of refs) {
+      const imgPath = path.resolve(ref.trim());
+      if (!fs.existsSync(imgPath)) {
+        console.error(`Reference image not found: ${imgPath}`);
+        process.exit(1);
+      }
+      const ext = path.extname(imgPath).toLowerCase();
+      const mimeType = ext === '.gif' ? 'image/gif' : 'image/png';
+      const imgData = fs.readFileSync(imgPath).toString('base64');
+      parts.push({
+        inlineData: { mimeType, data: imgData },
+      });
     }
-    const imgData = fs.readFileSync(imgPath).toString('base64');
-    parts.push({
-      inlineData: {
-        mimeType: 'image/png',
-        data: imgData,
-      },
-    });
-    parts.push({ text: feedback });
+    if (feedback) {
+      parts.push({ text: feedback });
+    } else if (refs.length > 0) {
+      parts.push({ text: 'Use the attached image(s) as a style reference. Match the art style closely.' });
+    }
   }
 
   // Always include the main prompt
