@@ -686,12 +686,39 @@ function DrawnCardPopup({
               },
             ]}
           >
-            <Text style={styles.drawnCardLabel}>You drew</Text>
-            <Image
-              source={CARD_IMAGES[cardColor]}
-              style={styles.drawnCardImage}
-              contentFit="contain"
-            />
+            <LinearGradient
+              colors={[THEME.bgCard, THEME.bgMid]}
+              style={styles.drawnCardInner}
+            >
+              <View style={styles.drawnCardCornerTL}>
+                <ArtDecoCorner position="topLeft" />
+              </View>
+              <View style={styles.drawnCardCornerTR}>
+                <ArtDecoCorner position="topRight" />
+              </View>
+              <View style={styles.drawnCardCornerBL}>
+                <ArtDecoCorner position="bottomLeft" />
+              </View>
+              <View style={styles.drawnCardCornerBR}>
+                <ArtDecoCorner position="bottomRight" />
+              </View>
+
+              <View style={styles.drawnCardHeader}>
+                <View style={styles.drawnCardHeaderLine} />
+                <Text style={styles.drawnCardLabel}>YOU DREW</Text>
+                <View style={styles.drawnCardHeaderLine} />
+              </View>
+
+              <Image
+                source={CARD_IMAGES[cardColor]}
+                style={styles.drawnCardImage}
+                contentFit="contain"
+              />
+
+              <View style={styles.drawnCardFooter}>
+                <Text style={styles.drawnCardFooterText}>══════ ◆ ══════</Text>
+              </View>
+            </LinearGradient>
           </Animated.View>
         </View>
       </TouchableWithoutFeedback>
@@ -1400,7 +1427,6 @@ export default function App() {
 
         case 'your-hand':
           setState((s) => ({ ...s, hand: payload.hand }));
-          // Show popup if this was a deck draw
           if (payload.drawnCard) {
             setDrawnCardPopup(payload.drawnCard);
           }
@@ -2267,26 +2293,76 @@ const styles = StyleSheet.create({
   // Drawn card popup
   drawnCardOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   drawnCardContainer: {
-    alignItems: 'center',
-    backgroundColor: THEME.bgCard,
-    borderRadius: RADIUS.xl,
-    padding: SPACING.xl,
-    borderWidth: 1,
+    borderRadius: RADIUS.lg,
+    borderWidth: 2,
     borderColor: THEME.brass,
+    shadowColor: THEME.brass,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  drawnCardInner: {
+    padding: SPACING.xl,
+    paddingHorizontal: SPACING.xxl,
+    borderRadius: RADIUS.lg - 2,
+    alignItems: 'center',
+    minWidth: 260,
+    overflow: 'hidden',
+  },
+  drawnCardCornerTL: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+  },
+  drawnCardCornerTR: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+  },
+  drawnCardCornerBL: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+  },
+  drawnCardCornerBR: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+  },
+  drawnCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  drawnCardHeaderLine: {
+    width: 40,
+    height: 1,
+    backgroundColor: THEME.brass,
   },
   drawnCardLabel: {
-    ...TYPE.heading,
+    ...TYPE.bodyS,
+    fontWeight: '700',
     color: THEME.brass,
-    marginBottom: SPACING.lg,
-    letterSpacing: 1,
+    letterSpacing: 2,
+    marginHorizontal: SPACING.md,
   },
   drawnCardImage: {
     width: 200,
     height: 140,
+    marginVertical: SPACING.sm,
+  },
+  drawnCardFooter: {
+    marginTop: SPACING.lg,
+  },
+  drawnCardFooterText: {
+    ...TYPE.micro,
+    color: THEME.brass,
+    letterSpacing: 2,
   },
 });
