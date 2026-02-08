@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   TextInput,
   ScrollView,
   SafeAreaView,
@@ -630,6 +631,101 @@ function Toast({ message, duration = 2500 }: { message: string | null; duration?
   );
 }
 
+function DrawnCardPopup({
+  cardColor,
+  onDismiss,
+}: {
+  cardColor: CardColor | null;
+  onDismiss: () => void;
+}) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.8)).current;
+
+  useEffect(() => {
+    if (cardColor) {
+      // Animate in
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scale, {
+          toValue: 1,
+          friction: 8,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Auto-dismiss after 2 seconds
+      const timeout = setTimeout(() => {
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => onDismiss());
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [cardColor, opacity, scale, onDismiss]);
+
+  if (!cardColor) return null;
+
+  return (
+    <Modal transparent visible={!!cardColor} animationType="none">
+      <TouchableWithoutFeedback onPress={onDismiss}>
+        <View style={styles.drawnCardOverlay}>
+          <Animated.View
+            style={[
+              styles.drawnCardContainer,
+              {
+                opacity,
+                transform: [{ scale }],
+              },
+            ]}
+          >
+            <LinearGradient
+              colors={[THEME.bgCard, THEME.bgMid]}
+              style={styles.drawnCardInner}
+            >
+              <View style={styles.drawnCardCornerTL}>
+                <ArtDecoCorner position="topLeft" />
+              </View>
+              <View style={styles.drawnCardCornerTR}>
+                <ArtDecoCorner position="topRight" />
+              </View>
+              <View style={styles.drawnCardCornerBL}>
+                <ArtDecoCorner position="bottomLeft" />
+              </View>
+              <View style={styles.drawnCardCornerBR}>
+                <ArtDecoCorner position="bottomRight" />
+              </View>
+
+              <View style={styles.drawnCardHeader}>
+                <View style={styles.drawnCardHeaderLine} />
+                <Text style={styles.drawnCardLabel}>YOU DREW</Text>
+                <View style={styles.drawnCardHeaderLine} />
+              </View>
+
+              <Image
+                source={CARD_IMAGES[cardColor]}
+                style={styles.drawnCardImage}
+                contentFit="contain"
+              />
+
+              <View style={styles.drawnCardFooter}>
+                <Text style={styles.drawnCardFooterText}>══════ ◆ ══════</Text>
+              </View>
+            </LinearGradient>
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  );
+}
+
 // ============ SCREENS ============
 
 function HomeScreen({
@@ -1160,6 +1256,7 @@ export default function App() {
   const [connecting, setConnecting] = useState(false);
   const [toast, setToast] = useState<{ message: string; duration: number } | null>(null);
   const toastKeyRef = useRef(0);
+  const [drawnCardPopup, setDrawnCardPopup] = useState<CardColor | null>(null);
   const [savedSession, setSavedSession] = useState<SavedGameSession | null>(null);
 
   // Alert state
@@ -1330,6 +1427,9 @@ export default function App() {
 
         case 'your-hand':
           setState((s) => ({ ...s, hand: payload.hand }));
+          if (payload.drawnCard) {
+            setDrawnCardPopup(payload.drawnCard);
+          }
           break;
 
         case 'player-action':
@@ -1505,6 +1605,12 @@ export default function App() {
       )}
       {state.screen === 'game' && toast && (
         <Toast key={toastKeyRef.current} message={toast.message} duration={toast.duration} />
+      )}
+      {state.screen === 'game' && (
+        <DrawnCardPopup
+          cardColor={drawnCardPopup}
+          onDismiss={() => setDrawnCardPopup(null)}
+        />
       )}
       <ThemedAlert
         visible={alertConfig.visible}
@@ -2183,5 +2289,80 @@ const styles = StyleSheet.create({
     ...TYPE.micro,
     color: THEME.brass,
     letterSpacing: 1,
+  },
+  // Drawn card popup
+  drawnCardOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  drawnCardContainer: {
+    borderRadius: RADIUS.lg,
+    borderWidth: 2,
+    borderColor: THEME.brass,
+    shadowColor: THEME.brass,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  drawnCardInner: {
+    padding: SPACING.xl,
+    paddingHorizontal: SPACING.xxl,
+    borderRadius: RADIUS.lg - 2,
+    alignItems: 'center',
+    minWidth: 260,
+    overflow: 'hidden',
+  },
+  drawnCardCornerTL: {
+    position: 'absolute',
+    top: 6,
+    left: 6,
+  },
+  drawnCardCornerTR: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+  },
+  drawnCardCornerBL: {
+    position: 'absolute',
+    bottom: 6,
+    left: 6,
+  },
+  drawnCardCornerBR: {
+    position: 'absolute',
+    bottom: 6,
+    right: 6,
+  },
+  drawnCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  drawnCardHeaderLine: {
+    width: 40,
+    height: 1,
+    backgroundColor: THEME.brass,
+  },
+  drawnCardLabel: {
+    ...TYPE.bodyS,
+    fontWeight: '700',
+    color: THEME.brass,
+    letterSpacing: 2,
+    marginHorizontal: SPACING.md,
+  },
+  drawnCardImage: {
+    width: 200,
+    height: 140,
+    marginVertical: SPACING.sm,
+  },
+  drawnCardFooter: {
+    marginTop: SPACING.lg,
+  },
+  drawnCardFooterText: {
+    ...TYPE.micro,
+    color: THEME.brass,
+    letterSpacing: 2,
   },
 });

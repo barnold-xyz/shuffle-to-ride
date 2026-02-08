@@ -279,6 +279,12 @@ export default class ShuffleToRideServer implements Server {
 
       console.log(`${conn.id} drew from deck: ${card.color}`);
 
+      // Send updated hand to drawer with the drawn card info
+      this.sendToConnection(conn, {
+        type: 'your-hand',
+        payload: { hand: player.hand, drawnCard: card.color },
+      });
+
       // Notify other players (don't reveal card color)
       this.broadcastPlayerAction(conn.id, {
         type: 'drew-from-deck',
@@ -338,6 +344,12 @@ export default class ShuffleToRideServer implements Server {
       }
 
       console.log(`${conn.id} drew face-up: ${result.card.color}`);
+
+      // Send updated hand to drawer with the drawn card info
+      this.sendToConnection(conn, {
+        type: 'your-hand',
+        payload: { hand: player.hand, drawnCard: result.card.color },
+      });
 
       // Notify other players (reveal card color since it was face-up)
       this.broadcastPlayerAction(conn.id, {
