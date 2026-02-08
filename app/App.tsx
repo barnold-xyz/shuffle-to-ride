@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   TextInput,
   ScrollView,
   SafeAreaView,
@@ -630,6 +631,74 @@ function Toast({ message, duration = 2500 }: { message: string | null; duration?
   );
 }
 
+function DrawnCardPopup({
+  cardColor,
+  onDismiss,
+}: {
+  cardColor: CardColor | null;
+  onDismiss: () => void;
+}) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(0.8)).current;
+
+  useEffect(() => {
+    if (cardColor) {
+      // Animate in
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scale, {
+          toValue: 1,
+          friction: 8,
+          tension: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Auto-dismiss after 2 seconds
+      const timeout = setTimeout(() => {
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => onDismiss());
+      }, 2000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [cardColor, opacity, scale, onDismiss]);
+
+  if (!cardColor) return null;
+
+  return (
+    <Modal transparent visible={!!cardColor} animationType="none">
+      <TouchableWithoutFeedback onPress={onDismiss}>
+        <View style={styles.drawnCardOverlay}>
+          <Animated.View
+            style={[
+              styles.drawnCardContainer,
+              {
+                opacity,
+                transform: [{ scale }],
+              },
+            ]}
+          >
+            <Text style={styles.drawnCardLabel}>You drew</Text>
+            <Image
+              source={CARD_IMAGES[cardColor]}
+              style={styles.drawnCardImage}
+              contentFit="contain"
+            />
+          </Animated.View>
+        </View>
+      </TouchableWithoutFeedback>
+    </Modal>
+  );
+}
+
 // ============ SCREENS ============
 
 function HomeScreen({
@@ -1160,6 +1229,7 @@ export default function App() {
   const [connecting, setConnecting] = useState(false);
   const [toast, setToast] = useState<{ message: string; duration: number } | null>(null);
   const toastKeyRef = useRef(0);
+  const [drawnCardPopup, setDrawnCardPopup] = useState<CardColor | null>(null);
   const [savedSession, setSavedSession] = useState<SavedGameSession | null>(null);
 
   // Alert state
@@ -1330,6 +1400,10 @@ export default function App() {
 
         case 'your-hand':
           setState((s) => ({ ...s, hand: payload.hand }));
+          // Show popup if this was a deck draw
+          if (payload.drawnCard) {
+            setDrawnCardPopup(payload.drawnCard);
+          }
           break;
 
         case 'player-action':
@@ -1505,6 +1579,12 @@ export default function App() {
       )}
       {state.screen === 'game' && toast && (
         <Toast key={toastKeyRef.current} message={toast.message} duration={toast.duration} />
+      )}
+      {state.screen === 'game' && (
+        <DrawnCardPopup
+          cardColor={drawnCardPopup}
+          onDismiss={() => setDrawnCardPopup(null)}
+        />
       )}
       <ThemedAlert
         visible={alertConfig.visible}
@@ -2183,5 +2263,30 @@ const styles = StyleSheet.create({
     ...TYPE.micro,
     color: THEME.brass,
     letterSpacing: 1,
+  },
+  // Drawn card popup
+  drawnCardOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  drawnCardContainer: {
+    alignItems: 'center',
+    backgroundColor: THEME.bgCard,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    borderWidth: 1,
+    borderColor: THEME.brass,
+  },
+  drawnCardLabel: {
+    ...TYPE.heading,
+    color: THEME.brass,
+    marginBottom: SPACING.lg,
+    letterSpacing: 1,
+  },
+  drawnCardImage: {
+    width: 200,
+    height: 140,
   },
 });
