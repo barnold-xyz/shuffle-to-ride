@@ -7,11 +7,11 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   ScrollView,
-  SafeAreaView,
   StatusBar,
   Animated,
   Modal,
 } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { config } from './src/config';
@@ -1569,6 +1569,7 @@ export default function App() {
   }, []);
 
   return (
+    <SafeAreaProvider>
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={THEME.bgDark} />
         {state.screen === 'home' && (
@@ -1620,6 +1621,7 @@ export default function App() {
         onDismiss={hideAlert}
       />
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
@@ -1639,7 +1641,7 @@ const styles = StyleSheet.create({
   },
   homeContainer: {
     justifyContent: 'flex-start',
-    paddingTop: 80,
+    paddingTop: SPACING.xl,
   },
 
   // Title styles
@@ -1747,7 +1749,7 @@ const styles = StyleSheet.create({
   // Lobby styles
   lobbyContainer: {
     justifyContent: 'flex-start',
-    paddingTop: 60,
+    paddingTop: SPACING.lg,
   },
   roomCodeBox: {
     alignItems: 'center',
@@ -1890,7 +1892,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 50,
+    paddingTop: SPACING.md,
     paddingBottom: SPACING.md,
     paddingHorizontal: SPACING.lg,
     borderBottomWidth: 1,
