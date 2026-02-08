@@ -1,0 +1,7 @@
+This is my previous attempt. Two problems to fix:
+
+1. THE CAR IS TOO SMALL. It must fill the entire 600x420 canvas edge to edge. The car should span nearly the full width with only a few pixels of padding on each side. Right now there are massive empty margins -- the car takes up maybe 60% of the frame. Scale it up dramatically.
+
+2. THE RED IS TOO DARK AND BROWNISH. The car body should be a vibrant, saturated red (#C41E3A) -- think fire engine red or classic barn red. Use 2-3 shades of this red for depth but keep it clearly, unmistakably red, not maroon or brown.
+
+Keep everything else the same -- the flat side view, dark wheels/undercarriage, transparent background, simplified shapes, and right-facing orientation are all correct. Just make it bigger and redder.

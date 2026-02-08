@@ -1,0 +1,11 @@
+This is my previous attempt. The red color is great now. But the car STILL does not fill the canvas.
+
+THE CAR MUST BE MUCH BIGGER. Look at the image -- there are large empty transparent margins on all four sides. The train car should be scaled up so that:
+- The left coupler nearly touches the left edge of the 600px canvas
+- The right end of the car nearly touches the right edge
+- The wheels sit near the bottom edge
+- The roof is near the top edge
+
+Think of it as zooming in on the car until it fills the frame like a tight crop. The transparent area should only be small gaps around the silhouette of the car, not large empty borders.
+
+Everything else is good -- keep the vibrant red, flat side view, dark wheels, and clean style.

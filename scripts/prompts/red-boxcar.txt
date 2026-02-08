@@ -1,0 +1,17 @@
+Create an image. Draw a 600x420 pixel image of a classic red railroad boxcar.
+
+STYLE: Vintage 1920s travel poster / art deco illustration. Bold flat color planes with minimal shading, like a screen-printed lithograph with 4-5 colors. NOT a cartoon, NOT a soft digital painting, NOT photorealistic. Think woodblock print or limited-palette poster art.
+
+VIEWPOINT: Perfectly flat 2D side-view profile, as if looking at the train from directly beside the tracks. No perspective, no 3/4 angle, no isometric view. Like a sprite in a side-scrolling game.
+
+FACING: Right (left to right).
+
+COLOR: The car body is red (#C41E3A), rendered with 2-3 shades for depth (base, shadow, highlight). The wheels, undercarriage, frame, and couplers are dark iron/charcoal (#2C2C2C to #3A3A3A). Optional brass/gold (#C9A227) highlights on hardware details. The body color MUST clearly contrast with the dark undercarriage -- do not make the wheels and frame the same color as the body.
+
+FRAMING: The boxcar fills the entire 600x420 canvas edge to edge with only a few pixels of padding. No large empty margins around the illustration.
+
+BACKGROUND: Fully transparent PNG alpha channel. No background color, no ground, no sky, no haze, no fog, no shadows bleeding into the transparent area. Every pixel is either fully opaque (part of the car) or fully transparent.
+
+SIMPLICITY: Bold simplified shapes that read clearly at 70x50px thumbnail size. No fine cross-bracing, tiny rivets, or intricate detail that disappears when small. Strong silhouette with clean edges.
+
+ABSOLUTELY NO text, labels, lettering, borders, or frames on the image. Just the train car illustration.

@@ -1,0 +1,7 @@
+Create an image. Draw a classic steam locomotive in a perfectly flat 2D side-view profile, facing right. The cowcatcher is at the right edge, the engineer's cab is at the left edge.
+
+This locomotive is special -- its boiler has a subtle multicolor gradient that flows from warm red at the cab (left) through orange, gold, green, blue, to dusty purple at the front (right). The colors should be MUTED and warm, like aged patina on metal -- not bright or garish rainbow. Think of how oil on metal catches different warm colors.
+
+Style: vintage 1920s poster illustration with thick hand-drawn outlines and bold simplified shapes. Dark warm brown wheels and undercarriage. No smoke from the smokestack. Transparent background. No text, no borders, no frames.
+
+CRITICAL: this must be a perfectly flat 2D side view with zero perspective or depth. Like a profile silhouette -- the cab is a flat rectangle, the boiler is a flat cylinder seen from the side, the cowcatcher is flat triangular. No 3/4 angle.

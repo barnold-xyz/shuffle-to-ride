@@ -1,0 +1,9 @@
+This is my previous attempt. The framing, color, proportions, and flat side view are all good. Keep all of that.
+
+One improvement needed: the style is too clean and modern -- it looks like a flat vector illustration. Add more vintage character:
+- Use slightly warmer tones (the dark parts should lean warm brown, not cool black)
+- Add subtle wood-grain or lithograph-like texture to the car body (not smooth flat fills)
+- The highlights and shadows should feel like a hand-printed poster with 3-4 color separations, not a computer-generated vector
+- A slightly thicker, more hand-drawn quality to the outlines
+
+Keep the same car shape, proportions, red color, dark wheels, flat side view, and right-facing orientation. Just make it feel more like a 1920s travel poster illustration and less like a modern SVG.

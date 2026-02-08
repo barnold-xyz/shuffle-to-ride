@@ -1,0 +1,7 @@
+This is my previous attempt. Getting closer but two fixes needed:
+
+1. VIEWPOINT: The cab and cowcatcher have a slight 3/4 perspective angle. It must be a PERFECTLY FLAT 2D side-view profile -- no depth or angle at all, just like the other train cars in the set. Pure silhouette, like looking at it from directly beside the tracks.
+
+2. COLOR: The iridescent treatment went too subtle -- it now reads as a single bronze color. I need something in between the previous garish rainbow and this monochrome bronze. The boiler should show a gentle gradient that flows through MUTED versions of these colors from front to back: warm red, rust orange, gold, teal green, steel blue, dusty purple. Each color should be just a warm tint -- not bright or saturated -- blending smoothly into the next. Think of aged patina on metal that catches different colors of light.
+
+Keep: facing right, warm brown wheels, vintage poster style, no smoke, transparent background, cowcatcher at front.
