@@ -15,5 +15,5 @@ export const CARD_IMAGES: Record<CardColor, ImageSourcePropType> = {
   purple: require('../assets/cards/purple.png'),
   black: require('../assets/cards/black.png'),
   white: require('../assets/cards/white.png'),
-  locomotive: require('../assets/cards/locomotive.png'),
+  locomotive: require('../assets/cards/locomotive.gif'),
 };

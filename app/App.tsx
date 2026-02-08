@@ -8,10 +8,10 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  Image,
   Animated,
   Modal,
 } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { config } from './src/config';
 import { THEME, TYPE, SPACING, RADIUS } from './src/theme';
@@ -418,7 +418,7 @@ function CardComponent({
       <Image
         source={CARD_IMAGES[card.color]}
         style={[styles.cardImage, { width: width - 4, height: height - 4 }]}
-        resizeMode="cover"
+        contentFit="cover"
       />
     </TouchableOpacity>
   );
@@ -475,7 +475,7 @@ function HandGrid({
                 <Image
                   source={CARD_IMAGES[color]}
                   style={styles.handGridImage}
-                  resizeMode="cover"
+                  contentFit="cover"
                 />
                 {discardMode && isSelected && (
                   <View style={styles.selectedOverlay}>
