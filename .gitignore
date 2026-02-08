@@ -5,3 +5,5 @@ dist/
 .DS_Store
 .worktrees/
 .env
+scripts/attempts/
+scripts/final/
